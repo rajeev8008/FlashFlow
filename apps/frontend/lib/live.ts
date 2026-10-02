@@ -14,6 +14,54 @@ export type Product = {
 export type Mode = "NAIVE" | "ATOMIC" | "MEMOIZED" | "BATCHED";
 export type Connection =
   "CONNECTING" | "LIVE" | "RECONNECTING" | "DEGRADED" | "OFFLINE";
+export type Metadata = {
+  source: "live" | "redis" | "unavailable";
+  stale: boolean;
+  snapshot_at: string | null;
+  age_seconds: number | null;
+  reason: string | null;
+  breaker: {
+    state: "CLOSED" | "OPEN" | "HALF_OPEN";
+    retry_after_seconds: number;
+    transitions: { from: string; to: string; at: string }[];
+  };
+};
+export function isSnapshot(
+  value: unknown,
+): value is { products: Product[]; metadata: Metadata } {
+  if (!value || typeof value !== "object") return false;
+  const v = value as { products?: unknown; metadata?: Metadata };
+  const m = v.metadata;
+  return (
+    Array.isArray(v.products) &&
+    v.products.every(isProduct) &&
+    !!m &&
+    ["live", "redis", "unavailable"].includes(m.source) &&
+    typeof m.stale === "boolean" &&
+    (m.source === "live" || m.stale) &&
+    (m.snapshot_at === null ||
+      (typeof m.snapshot_at === "string" &&
+        Number.isFinite(Date.parse(m.snapshot_at)))) &&
+    (m.age_seconds === null ||
+      (typeof m.age_seconds === "number" &&
+        Number.isFinite(m.age_seconds) &&
+        m.age_seconds >= 0)) &&
+    (m.reason === null || typeof m.reason === "string") &&
+    !!m.breaker &&
+    ["CLOSED", "OPEN", "HALF_OPEN"].includes(m.breaker.state) &&
+    Array.isArray(m.breaker.transitions) &&
+    m.breaker.transitions.every(
+      (event) =>
+        !!event &&
+        typeof event.from === "string" &&
+        typeof event.to === "string" &&
+        typeof event.at === "string",
+    ) &&
+    typeof m.breaker.retry_after_seconds === "number" &&
+    Number.isFinite(m.breaker.retry_after_seconds) &&
+    m.breaker.retry_after_seconds >= 0
+  );
+}
 export function isProduct(value: unknown): value is Product {
   if (!value || typeof value !== "object") return false;
   const p = value as Record<string, unknown>;
@@ -55,11 +103,17 @@ export const useInventory = create<{
   ids: string[];
   connection: Connection;
   mode: Mode;
+  metadata: Metadata | null;
+  staleSince: number | null;
+  lastSnapshotAt: string | null;
 }>(() => ({
   productsById: {},
   ids: [],
   connection: "CONNECTING",
   mode: "BATCHED",
+  metadata: null,
+  staleSince: null,
+  lastSnapshotAt: null,
 }));
 export function applyProducts(products: Product[]) {
   useInventory.setState((state) => {
@@ -126,6 +180,7 @@ export function startLive() {
     openTimeout: ReturnType<typeof setTimeout> | undefined,
     heartbeat: ReturnType<typeof setInterval> | undefined,
     controller: AbortController | undefined;
+  let snapshotTimer: ReturnType<typeof setTimeout> | undefined;
   const buffer = createBuffer(
     applyProducts,
     requestAnimationFrame,
@@ -144,6 +199,7 @@ export function startLive() {
     }
     clearInterval(heartbeat);
     clearTimeout(openTimeout);
+    clearTimeout(snapshotTimer);
     controller?.abort();
     status(generation ? "RECONNECTING" : "CONNECTING");
     const current = ++generation;
@@ -153,16 +209,9 @@ export function startLive() {
     let lastMessage = performance.now();
     socket = ws;
     openTimeout = setTimeout(() => ws.close(), 10000);
-    ws.onopen = async () => {
-      if (stopped || current !== generation) return;
-      clearTimeout(openTimeout);
-      attempt = 0;
-      status("LIVE");
-      lastMessage = performance.now();
-      heartbeat = setInterval(() => {
-        if (performance.now() - lastMessage > 45000) ws.close();
-        else if (ws.readyState === WebSocket.OPEN) ws.send("pong");
-      }, 10000);
+    async function refreshCatalog() {
+      if (stopped || current !== generation || ws.readyState !== WebSocket.OPEN)
+        return;
       controller = new AbortController();
       try {
         const response = await fetch("/api/products", {
@@ -171,27 +220,57 @@ export function startLive() {
             AbortSignal.timeout(10000),
           ]),
         });
-        const products: unknown = await response.json();
+        const snapshot: unknown = await response.json();
+        if (!response.ok || !isSnapshot(snapshot))
+          throw new Error("Invalid inventory snapshot");
         if (
-          !response.ok ||
-          !Array.isArray(products) ||
-          !products.every(isProduct)
+          stopped ||
+          current !== generation ||
+          ws.readyState !== WebSocket.OPEN
         )
-          throw new Error("Invalid catalog");
-        if (
-          !stopped &&
-          current === generation &&
-          ws.readyState === WebSocket.OPEN
-        )
-          applyProducts(products);
+          return;
+        applyProducts(snapshot.products);
+        useInventory.setState((state) => ({
+          metadata: snapshot.metadata,
+          lastSnapshotAt:
+            snapshot.products.length && snapshot.metadata.snapshot_at
+              ? snapshot.metadata.snapshot_at
+              : state.lastSnapshotAt,
+          staleSince: snapshot.metadata.stale
+            ? (state.staleSince ?? Date.now())
+            : null,
+        }));
+        status(snapshot.metadata.stale ? "DEGRADED" : "LIVE");
       } catch {
         if (
           !stopped &&
           current === generation &&
           ws.readyState === WebSocket.OPEN
-        )
+        ) {
+          useInventory.setState((state) => ({
+            staleSince: state.staleSince ?? Date.now(),
+          }));
           status("DEGRADED");
+        }
+      } finally {
+        if (
+          !stopped &&
+          current === generation &&
+          ws.readyState === WebSocket.OPEN
+        )
+          snapshotTimer = setTimeout(refreshCatalog, 2000);
       }
+    }
+    ws.onopen = () => {
+      if (stopped || current !== generation) return;
+      clearTimeout(openTimeout);
+      attempt = 0;
+      lastMessage = performance.now();
+      heartbeat = setInterval(() => {
+        if (performance.now() - lastMessage > 45000) ws.close();
+        else if (ws.readyState === WebSocket.OPEN) ws.send("pong");
+      }, 10000);
+      void refreshCatalog();
     };
     ws.onmessage = (event) => {
       if (stopped || current !== generation) return;
@@ -227,6 +306,7 @@ export function startLive() {
     ws.onclose = () => {
       if (stopped || current !== generation) return;
       clearTimeout(openTimeout);
+      clearTimeout(snapshotTimer);
       clearInterval(heartbeat);
       controller?.abort();
       buffer.drain();
@@ -253,6 +333,7 @@ export function startLive() {
     generation++;
     clearTimeout(retry);
     clearTimeout(openTimeout);
+    clearTimeout(snapshotTimer);
     clearInterval(heartbeat);
     controller?.abort();
     socket?.close();

@@ -280,3 +280,83 @@ footer {
     transform: none;
   }
 }
+.resilience {
+  margin-top: 18px;
+}
+.freshness {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  border: 1px solid #2d3a30;
+  border-radius: 14px;
+  background: #111a14;
+  font-size: 12px;
+}
+.freshness p,
+.chaos p {
+  color: #a5b4aa;
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+.freshness > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #a5b4aa;
+  min-width: 160px;
+}
+.freshness.stale {
+  background: #302617;
+  border-color: #8a683b;
+  color: #ffce91;
+}
+.chaos {
+  margin-top: 14px;
+  border: 1px solid #3b4a3e;
+  border-radius: 12px;
+  padding: 18px;
+}
+.chaos summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+.chaos fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  border: 0;
+  padding: 20px 0 8px;
+  align-items: center;
+}
+.chaos label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.chaos input {
+  accent-color: #b6ed85;
+}
+.chaos button {
+  background: #203124;
+  border: 1px solid #52664b;
+  color: #e7eeea;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.chaos button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.chaos button:focus-visible,
+.chaos summary:focus-visible {
+  outline: 2px solid #b6ed85;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .freshness {
+    flex-direction: column;
+  }
+}

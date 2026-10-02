@@ -1,6 +1,6 @@
 # FlashFlow
 
-FlashFlow streams simulated retail inventory through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. Phases 1–3 are implemented.
+FlashFlow streams simulated retail inventory through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. Phases 1–4 are implemented.
 
 ## Start locally
 
@@ -79,7 +79,7 @@ invalid/exhausted events -> inventory-events-dlq
 
 PostgreSQL updates and event-ID receipts commit together under a product row lock. Duplicate events cannot double-apply, stale versions are ignored, and version gaps or invalid stock transitions are retried and dead-lettered. Payload snapshots are checked against computed transitions rather than trusted as inventory state.
 
-Kafka auto-commit is disabled. Each partition offset advances only after database/cache processing and broadcast enqueue, or acknowledged DLQ publication. A cache failure after a database commit is repaired on replay without applying the event again. DLQ publication or offset-commit failures retry the same record. Delivery to browsers is best-effort; reconnecting clients fetch a durable catalog snapshot and ignore older versions.
+Kafka auto-commit is disabled. Each partition offset advances only after database/cache processing and broadcast enqueue, or acknowledged DLQ publication. A cache failure after a database commit is repaired on replay without applying the event again. Infrastructure connection/time-out failures retain the record for retry rather than dead-lettering valid updates. DLQ publication or offset-commit failures retry the same record. Delivery to browsers is best-effort; reconnecting clients fetch a durable catalog snapshot and ignore older versions.
 
 WebSockets use heartbeat messages and client `pong` replies. Each client has a bounded queue; slow clients disconnect and reconnect without blocking the consumer. `/metrics` exposes processed, failed-attempt, duplicate, stale, DLQ, and active-client counters. Counters reset when the API restarts. Structured JSON event-failure and connection logs are written to container output.
 
@@ -87,9 +87,9 @@ Additional configuration: `KAFKA_CONSUMER_GROUP`, `KAFKA_DLQ_TOPIC`, `CONSUMER_M
 
 ## Current limits
 
-Run one API worker and one simulator. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages exceeding retries can leave its snapshot behind PostgreSQL until another event or replay repairs it. The event ledger is retained indefinitely for this portfolio scope.
+Run one API worker and one simulator. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages retain the affected Kafka record and temporarily hold consumer progress until its cache/broadcast can be repaired. The event ledger is retained indefinitely for this portfolio scope.
 
-Dynamic pricing, cache fallback, circuit breakers, fault injection, authentication, production TLS, and systematic load benchmarks remain later work. This Compose stack is for local development.
+Dynamic pricing, application authentication, production TLS, and systematic load benchmarks remain later work. Development fault controls use token authentication, not a general application login. This Compose stack is for local development.
 
 ## Phase 3 frontend
 
@@ -103,7 +103,7 @@ WebSocket -> validate -> buffer keyed by product_id -> requestAnimationFrame
 
 The normalized store contains `productsById`, stable `ids`, connection state, and render mode. Updates retain unrelated product object identities; equal/older versions cannot replace newer ones, including snapshots fetched after reconnect. BATCHED drains at most once per animation frame. Switching modes drains pending events; unmount cancels the pending frame, timers, fetch, and socket.
 
-The lifecycle supports CONNECTING, LIVE, RECONNECTING, DEGRADED, and OFFLINE. Reconnect delays grow from 1 to 30 seconds and reset on a successful socket open. Each reconnect fetches a fresh durable catalog. Invalid messages/catalog responses mark the retained dashboard DEGRADED; network loss marks it OFFLINE. Heartbeats detect silent connections after 45 seconds. Phase 4 will add explicit backend dependency/fallback metadata; DEGRADED currently means a client-side ingestion/snapshot problem, not a Redis fallback guarantee.
+The lifecycle supports CONNECTING, LIVE, RECONNECTING, DEGRADED, and OFFLINE. Reconnect delays grow from 1 to 30 seconds and reset on a successful socket open. Each reconnect fetches a durable catalog, followed by periodic health snapshots. Invalid messages/catalog responses mark the retained dashboard DEGRADED; network loss marks it OFFLINE. Heartbeats detect silent connections after 45 seconds. Backend cache/freshness metadata now also controls degraded mode, as described below.
 
 ### Comparing modes
 
@@ -149,4 +149,70 @@ docker compose start simulator
 
 Validation on the development machine: five frontend unit tests, three browser tests with the live stack enabled, ten backend tests, TypeScript checking, and a production build passed. A 2,000-message synthetic burst produced five updated-card commits in one run; this varies with scheduling. During a bounded 500-events/s producer run/backlog drain, one browser sample observed 92 received updates/s, 60 flushes/s, approximately 6 ms receipt-to-commit latency and 60 FPS. The configured producer rate is **not** measured end-to-end throughput. These are illustrative local samples, not controlled benchmark claims.
 
-Phase 4 can build on the retained product store and connection states to add cache freshness, dependency failure metadata, circuit breakers, and restricted chaos controls. Those features are deliberately not implemented here. The client currently renders the full catalog and expects the existing API on port 8000; virtualization and configurable production WebSocket routing should be added when deployment or catalog size requires them.
+The client currently renders the full catalog and expects the existing API on port 8000; virtualization and configurable production WebSocket routing should be added when deployment or catalog size requires them.
+
+## Resilience and development lab
+
+`GET /inventory` returns `{products, metadata}`. PostgreSQL remains authoritative. Validated live catalog reads run through a configurable circuit breaker; successful reads save an atomic full-catalog Redis snapshot under `catalog:snapshot`. Existing `product:<id>` event caches remain unchanged. The legacy `/products` list endpoint is retained for inspection/integration compatibility; the frontend proxy uses `/inventory` for resilience metadata.
+
+After three consecutive read failures, the circuit becomes OPEN and skips live reads for five seconds. The next request admits a serialized HALF_OPEN probe; one successful probe closes it, while a failed probe reopens it. `BREAKER_FAILURE_THRESHOLD`, `BREAKER_RECOVERY_SECONDS`, `BREAKER_HALF_OPEN_TRIALS`, and `INVENTORY_TIMEOUT_SECONDS` configure these values. Half-open trials are sequential successes, not parallel requests. Transition history (last 20 transitions), state, failures, and retry delay are visible in metadata, `/metrics`, structured logs, and the dashboard.
+
+If live reads fail or cannot be validated, the API validates and serves the last Redis catalog with `source: redis`, `stale: true`, snapshot timestamp, age, reason, and circuit metadata. If Redis is also unavailable or its snapshot is missing/corrupt, the response is explicitly unavailable, not an empty live catalog. The browser retains its current products and last known snapshot timestamp. A failed cache refresh or paused/stopped consumer also marks data degraded. Reading paused inventory does not refresh its freshness timestamp.
+
+The client polls the health/catalog envelope two seconds after each completed request while its socket is open. This discovers outages and recovery even when no product events arrive. Version guards prevent cached/older snapshots from rolling cards back; unchanged products preserve their object identities and render isolation. Recovery clears the stale warning and restores LIVE without a page reload. Receipt-to-render instrumentation still refers to WebSocket events, not periodic snapshot hydration.
+
+### Enable local controls explicitly
+
+Controls are disabled by default. The API requires **all three**: `APP_ENV=development`, `ENABLE_CHAOS=true`, and a non-empty `CHAOS_TOKEN`. Production rejects controls even if a token and enable flag are set. The Next.js proxy additionally requires development mode, retains the token server-side, accepts only fixed action paths and loopback hostnames, and rejects POST requests without a matching Origin. Compose binds the API/frontend ports to `127.0.0.1` rather than all network interfaces. Do not expose this development lab publicly.
+
+In PowerShell, from the repository root:
+
+```powershell
+$env:APP_ENV='development'
+$env:ENABLE_CHAOS='true'
+$env:CHAOS_TOKEN=[guid]::NewGuid().ToString('N')
+docker compose up -d --build api frontend
+```
+
+Alternatively set these values in your ignored local `.env`; never commit a real token. Open the dashboard's **Development lab** panel. It supports inventory-read failure, artificial read latency (0/500/3,000 ms), Redis failure, consumer pause, fixed invalid-event injection, WebSocket interruption, and reset. Artificial latency over the default two-second read timeout triggers fallback and breaker failure accounting. Invalid events enter the real inventory topic and reach its DLQ; they cannot supply arbitrary stock changes.
+
+Reproducible recovery demo:
+
+1. Wait for LIVE, which also warms the Redis catalog snapshot.
+2. Enable Inventory read failure. The dashboard retains cards and displays DEGRADED, Redis source, snapshot age, and eventually OPEN.
+3. Clear the failure or use Reset faults. After the recovery timeout, transition history shows OPEN → HALF_OPEN → CLOSED and the dashboard returns to LIVE.
+4. Try Redis unavailable: data is marked degraded and valid Kafka records are retained/replayed, not sent to DLQ. Reset allows processing to resume.
+5. Pause the consumer briefly: stock delivery pauses and snapshot age increases. Reset resumes delivery. Interrupt WebSockets to demonstrate retained cards and reconnect snapshot refresh.
+
+Disable the lab again by setting `APP_ENV=production`, `ENABLE_CHAOS=false`, clearing `CHAOS_TOKEN`, and recreating API/frontend containers. No token is sent to the browser.
+
+### Verification
+
+With development controls enabled and the full stack running:
+
+```bash
+docker compose exec api sh -c "pip install -e '.[test]' && pytest -q"
+docker compose exec api python tests/integration_resilience.py
+```
+
+From `apps/frontend` in PowerShell:
+
+```powershell
+npm test
+npm run lint
+$env:LIVE_STACK='1'
+$env:CHAOS_TEST='1'
+npm run test:e2e
+```
+
+Backend tests cover circuit transitions, rejected calls, failed probes, configurable half-open trials, validated fallback, missing/corrupt caches, stale age, latency timeouts, replay after dependency failures, and production/token guards. The live probe verifies actual Redis fallback, circuit recovery, consumer pause, valid-record retention during a simulated Redis outage, and invalid-event DLQ delivery. Browser checks cover retained newer cards, total fallback loss, automatic recovery without reconnect, hidden controls when unavailable, same-origin write rejection, and actual control-driven breaker recovery/WebSocket interruption.
+
+Current local verification passed: 18 backend tests, six frontend unit tests, five browser tests with live-stack/chaos checks enabled, TypeScript checking, and a production frontend build. The live recovery probe passed against Redis/Kafka, and a separate production-mode frontend check returned 404 despite a configured server token. The hostile Host and missing Origin checks returned 403. These checks demonstrate the local implementation, not a multi-node availability guarantee.
+
+### Remaining limits and next work
+
+The circuit and fault state are process-local and reset on API restart. Probes are serialized; per-browser catalog polling is intended for this small local dashboard, not large fleets. The full-catalog fallback is refreshed by healthy `/inventory` reads, not every individual Kafka event, and needs at least one successful read before it is available. Redis has no persistent Compose volume; a Redis restart may remove snapshots. Cached products are retained indefinitely but always marked stale with their actual timestamp; they must not authorize checkout decisions.
+
+Inventory failure/Redis failure are application-boundary simulations, not container destruction. Inventory-read failure does not stop PostgreSQL event writes. A paused or Redis-blocked consumer can process one already-in-flight update. Keep consumer pauses short (below Kafka's five-minute max poll interval); prolonged group rebalances may require restarting the API consumer, with idempotent replay protecting stock. Kafka broker interruption is not implemented as a chaos action. Startup/terminal Kafka consumer failures still need an API restart; dependency failures during record processing retry automatically. These boundaries are visible rather than disguised as production failover.
+
+The retained store, validated inventory snapshots, version ordering, and recovery metadata are ready for the next demand/pricing work. Sales velocity calculation, pricing rules, guardrails, audit history, and optional ML remain unimplemented.

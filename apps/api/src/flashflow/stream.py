@@ -8,10 +8,13 @@ from datetime import datetime, timezone
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, TopicPartition
 from fastapi import WebSocket
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
+from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .inventory import process_event
 from .schemas import EventEnvelope
+from .resilience import DependencyUnavailable
 
 logger = logging.getLogger("flashflow")
 
@@ -76,10 +79,11 @@ class ConnectionManager:
 
 
 class InventoryConsumer:
-    def __init__(self, manager: ConnectionManager):
+    def __init__(self, manager: ConnectionManager, faults=None):
         self.manager = manager
+        self.faults = faults
         self.counters = Counter()
-        self.redis = Redis.from_url(settings.redis_url)
+        self.redis = Redis.from_url(settings.redis_url, socket_timeout=1, socket_connect_timeout=1)
         self.consumer = AIOKafkaConsumer(settings.kafka_inventory_topic,
             bootstrap_servers=settings.kafka_bootstrap_servers, group_id=settings.kafka_consumer_group,
             enable_auto_commit=False, auto_offset_reset="earliest", max_poll_interval_ms=300000)
@@ -97,6 +101,8 @@ class InventoryConsumer:
                 if record.key != str(event.product_id).encode():
                     raise ValueError("Kafka key must match product_id")
                 product, outcome = await process_event(event)
+                if getattr(self, "faults", None) and self.faults.redis_unavailable:
+                    raise DependencyUnavailable("Redis failure injected")
                 # Replays repair cache/broadcast after a database commit interrupted by failure.
                 await self.redis.set(f"product:{product.product_id}", product.model_dump_json())
                 self.manager.broadcast({"type": "product_update", "event_id": str(event.event_id), "product": product.model_dump(mode="json")})
@@ -109,6 +115,9 @@ class InventoryConsumer:
                     if not isinstance(error, ValueError):
                         await asyncio.sleep(settings.consumer_retry_seconds * 2 ** (attempt - 1))
                 else:
+                    if isinstance(error, (ConnectionError, TimeoutError, RedisError, SQLAlchemyError)):
+                        # Infrastructure outages retain the Kafka offset; only bad events go to DLQ.
+                        raise
                     failure = {"topic": record.topic, "partition": record.partition, "offset": record.offset,
                                "key": record.key.hex() if record.key else None, "raw_value_hex": record.value.hex(),
                                "error": str(error), "attempts": attempt, "timestamp": datetime.now(timezone.utc).isoformat()}
@@ -123,6 +132,8 @@ class InventoryConsumer:
                 # Failed DLQ publication or commit retains this offset and retries the same record.
                 while True:
                     try:
+                        while getattr(self, "faults", None) and self.faults.consumer_paused:
+                            await asyncio.sleep(0.2)
                         await self.handle(record)
                         await self.consumer.commit({TopicPartition(record.topic, record.partition): record.offset + 1})
                         break

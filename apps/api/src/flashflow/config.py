@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     consumer_max_attempts: int = Field(3, ge=1)
     consumer_retry_seconds: float = Field(0.5, ge=0)
     websocket_heartbeat_seconds: float = Field(15, gt=0)
+    app_env: Literal["development", "test", "production"] = "production"
+    enable_chaos: bool = False
+    chaos_token: str = ""
+    breaker_failure_threshold: int = Field(3, ge=1)
+    breaker_recovery_seconds: float = Field(5, gt=0)
+    breaker_half_open_trials: int = Field(1, ge=1)
+    inventory_timeout_seconds: float = Field(2, gt=0)
     simulator_mode: Literal["NORMAL", "BUSY", "FLASH_SALE", "EXTREME"] = "NORMAL"
     simulator_events_per_second: int | None = Field(None, ge=1)
     simulator_product_count: int = Field(100, ge=1, le=1000)

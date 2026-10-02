@@ -4,6 +4,7 @@ import {
   applyProducts,
   createBuffer,
   isProduct,
+  isSnapshot,
   Product,
   reconnectDelay,
   useInventory,
@@ -32,6 +33,25 @@ test("trust boundary rejects invalid products", () => {
     { ...product, last_updated: "invalid" },
   ])
     assert.equal(isProduct(invalid), false);
+});
+test("snapshot metadata is mandatory and preserves explicit stale-cache semantics", () => {
+  const value = {
+    products: [product],
+    metadata: {
+      source: "redis",
+      stale: true,
+      snapshot_at: "2026-10-02T00:00:00Z",
+      age_seconds: 30,
+      reason: "Cached",
+      breaker: { state: "OPEN", retry_after_seconds: 5, transitions: [] },
+    },
+  };
+  assert.ok(isSnapshot(value));
+  assert.equal(isSnapshot([product]), false);
+  assert.equal(
+    isSnapshot({ ...value, metadata: { ...value.metadata, age_seconds: -1 } }),
+    false,
+  );
 });
 test("buffer merges latest versions and schedules exactly once per frame", () => {
   let callback: FrameRequestCallback = () => {},

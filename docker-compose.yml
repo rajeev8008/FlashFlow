@@ -59,6 +59,9 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://flashflow:flashflow@postgres:5432/flashflow}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      APP_ENV: ${APP_ENV:-production}
+      ENABLE_CHAOS: ${ENABLE_CHAOS:-false}
+      CHAOS_TOKEN: ${CHAOS_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,7 +71,7 @@ services:
         condition: service_completed_successfully
     command: ["sh", "-c", "alembic upgrade head && python -m flashflow.seed && uvicorn flashflow.main:app --host 0.0.0.0 --port 8000"]
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -92,11 +95,13 @@ services:
     build: ./apps/frontend
     environment:
       API_INTERNAL_URL: http://api:8000
+      APP_ENV: ${APP_ENV:-production}
+      CHAOS_TOKEN: ${CHAOS_TOKEN:-}
     depends_on:
       api:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
 
 volumes:
   postgres-data:

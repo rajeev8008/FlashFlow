@@ -1,5 +1,6 @@
 "use client";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ResiliencePanel } from "./resilience-panel";
 import {
   arrivals,
   Mode,
@@ -189,6 +190,7 @@ export default function Home() {
         </div>
       </section>
       <EngineeringPanel />
+      <ResiliencePanel />
       <section className="toolbar">
         <div>
           <h2>The live collection</h2>
