@@ -8,6 +8,7 @@ from sqlalchemy import select
 from .database import Session
 from .models import ProcessedEvent, ProductRow
 from .schemas import EventEnvelope, EventType, Product
+from .pricing import record_decision
 
 
 class InventoryPayload(BaseModel):
@@ -40,9 +41,7 @@ def transition(product: Product, event: EventEnvelope) -> Product:
         else:
             data["stock"] += quantity
     elif event.event_type == EventType.PRICE_UPDATED:
-        if payload.current_price is None:
-            raise ValueError("price event requires current_price")
-        data["current_price"] = payload.current_price
+        raise ValueError("Price changes require an audited pricing event")
     elif data["stock"] != 0:
         raise ValueError("sold-out event requires zero stock")
     for field in ("stock", "reserved_stock"):
@@ -65,7 +64,9 @@ async def process_event(event: EventEnvelope) -> tuple[Product, Literal["process
         outcome = "stale" if updated.version == product.version else "processed"
         if outcome == "processed":
             for field, value in updated.model_dump(mode="python").items():
-                if field != "product_id":
+                if field not in ("product_id", "pricing_source"):
                     setattr(row, field, value)
+            record_decision(session, row, event)
+            updated = Product.model_validate(row)
         session.add(ProcessedEvent(event_id=str(event.event_id), product_id=str(event.product_id), outcome=outcome, processed_at=datetime.now(timezone.utc)))
     return updated, outcome

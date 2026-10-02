@@ -1,6 +1,6 @@
 # FlashFlow
 
-FlashFlow streams simulated retail inventory through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. Phases 1–4 are implemented.
+FlashFlow streams simulated retail inventory and audited rule-based prices through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. Phases 1–5 are implemented.
 
 ## Start locally
 
@@ -89,7 +89,7 @@ Additional configuration: `KAFKA_CONSUMER_GROUP`, `KAFKA_DLQ_TOPIC`, `CONSUMER_M
 
 Run one API worker and one simulator. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages retain the affected Kafka record and temporarily hold consumer progress until its cache/broadcast can be repaired. The event ledger is retained indefinitely for this portfolio scope.
 
-Dynamic pricing, application authentication, production TLS, and systematic load benchmarks remain later work. Development fault controls use token authentication, not a general application login. This Compose stack is for local development.
+Application authentication, production TLS, and systematic load benchmarks remain later work. Development fault controls use token authentication, not a general application login. This Compose stack is for local development.
 
 ## Phase 3 frontend
 
@@ -116,7 +116,7 @@ The lifecycle supports CONNECTING, LIVE, RECONNECTING, DEGRADED, and OFFLINE. Re
 
 The optimized grid includes an explicit one-second parent pulse to demonstrate ATOMIC versus MEMOIZED. This is benchmark overhead, not an inventory update. React may independently batch immediate updates, so do not assume every event produces a commit. Mode switches remount some cards; wait for a fresh sample before comparing. Use the same event rate, product count, browser, foreground tab, and run duration for each mode.
 
-The panel samples actual counters every second: valid socket updates (including stale ones), event-driven store flushes, accepted events per flush, committed card renders, browser receipt-to-card-commit latency, and animation-frame FPS. Catalog hydration and mode remounts count as card commits but not socket flushes. Latency measures only rendered products and excludes server/network time; coalesced-away versions have no render sample. FPS is an estimate affected by background throttling. Demand displays the backend `sales_velocity` value, which is currently zero; demand calculation belongs to Phase 5.
+The panel samples actual counters every second: valid socket updates (including stale ones), event-driven store flushes, accepted events per flush, committed card renders, browser receipt-to-card-commit latency, and animation-frame FPS. Catalog hydration and mode remounts count as card commits but not socket flushes. Latency measures only rendered products and excludes server/network time; coalesced-away versions have no render sample. FPS is an estimate affected by background throttling. Demand now displays the backend window-based `sales_velocity` described below.
 
 ### Frontend checks
 
@@ -215,4 +215,32 @@ The circuit and fault state are process-local and reset on API restart. Probes a
 
 Inventory failure/Redis failure are application-boundary simulations, not container destruction. Inventory-read failure does not stop PostgreSQL event writes. A paused or Redis-blocked consumer can process one already-in-flight update. Keep consumer pauses short (below Kafka's five-minute max poll interval); prolonged group rebalances may require restarting the API consumer, with idempotent replay protecting stock. Kafka broker interruption is not implemented as a chaos action. Startup/terminal Kafka consumer failures still need an API restart; dependency failures during record processing retry automatically. These boundaries are visible rather than disguised as production failover.
 
-The retained store, validated inventory snapshots, version ordering, and recovery metadata are ready for the next demand/pricing work. Sales velocity calculation, pricing rules, guardrails, audit history, and optional ML remain unimplemented.
+The retained store and recovery metadata now carry independent inventory and price revisions. Optional ML remains deferred.
+
+## Demand-based pricing
+
+Every accepted inventory transition records a durable pricing decision in the same PostgreSQL transaction as stock and its event receipt. A changed recommendation is a transactional outbox entry: the consumer publishes its deterministic decision ID to `pricing-events`, keyed by product ID, before acknowledging the source inventory offset. The same consumer processes both topics. The pricing handler looks up the recorded decision, rechecks guards under the product row lock, applies it once, and uses the existing Redis/WebSocket product-update path. Kafka/Redis/database outages retain offsets; duplicate publication or interrupted broadcasts replay safely.
+
+Prices have a separate `price_version`; they never advance inventory `version` or change stock. Store ingestion, reconnect snapshots, and frame buffering reject regressions in either revision while accepting price-only advances. Cards show direction, demand, RULES source, and an expandable reason/revision with a link to recent audit inputs/outcomes. `GET /pricing/decisions?product_id=<uuid>&limit=30` exposes the durable history; limits are clamped to 200.
+
+### Rules and limits
+
+- Each product tracks an event-time window (default 30 seconds), purchased units, and event count. Sales velocity is purchased units divided by configured window length, not an extrapolated instantaneous rate. Reservation pressure is reserved/stock; available ratio is unreserved stock/reference stock. Reference stock is initialized on seed/migration.
+- HIGH demand: reservation pressure ≥50% or sales velocity ≥0.05 units/s. LOW: available ratio ≥80%, velocity ≤0.01 units/s, and at least half a window observed. Otherwise NORMAL. HIGH targets 110% of base price, LOW 95%, NORMAL 100%; targets do not compound.
+- Every move is bounded by configured absolute min/max, base-relative maximum increase/discount (20% each), and per-change step (5%). Cent rounding cannot cross bounds. Cooldown is 30 seconds; reversals wait 120 seconds. Sold-out, disabled, pending, incompatible bounds, warming windows, and non-live events hold price. Old events (>two windows) and future events (>five seconds) cannot trigger pricing.
+- One pending decision per product prevents floods. Delivery must occur within two windows and still match the recorded price revision/target; otherwise it is audited as REJECTED. Applied decisions retain previous/recommended/applied prices, adjustment percentage, input signals, source, timestamps, and outcome. HOLD decisions are also persisted. Duplicate/stale inventory events do not create new decisions.
+
+Settings are in `.env.example` (`PRICING_*`, `KAFKA_PRICING_TOPIC`). `PRICING_ENABLED=false` keeps stock processing and HOLD audits working without changing prices. Direct unaudited PRICE_UPDATED inventory events are rejected; price records must reference a stored decision on the pricing topic.
+
+### Verify pricing
+
+```bash
+docker compose exec api sh -c "pip install -e '.[test]' && pytest -q"
+docker compose exec api python tests/integration_pricing.py
+```
+
+The isolated live probe verifies a 5% increase, audit persistence, Kafka-to-WebSocket delivery, unchanged inventory revision/stock, duplicate price application, cooldown HOLD persistence, and rejection of an untrusted pricing source. Unit checks cover deterministic bounds, cent rounding, cooldown, reversal protection, pending/sold-out/disabled holds, captured inputs, and retention of the source record when pricing publication fails. Frontend unit/browser checks cover price-only revisions and stale catalog rollback prevention; prior inventory/resilience tests remain in place.
+
+Pricing verification on the local stack passed: 22 backend tests, seven frontend unit tests, six browser tests with live-stack/development controls enabled, TypeScript checking, and a production frontend build. The pricing, inventory, and resilience live probes passed. These are functional checks, not controlled throughput or financial-impact measurements.
+
+This is a transparent heuristic, not trained ML or a profit optimizer. No model accuracy, revenue uplift, or pricing throughput is claimed. Windows reset on the next inventory event and displayed demand does not decay without events. Audit rows are retained indefinitely; production volume needs retention/archival. Single-worker/fanout and Kafka polling limits above still apply. The next step is Phase 6's final documentation, controlled benchmarking, and demo polish, not an assumed production rollout.

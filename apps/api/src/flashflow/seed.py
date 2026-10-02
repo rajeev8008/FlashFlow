@@ -31,6 +31,8 @@ def build_products(count: int = 500, seed: int = 42) -> list[ProductRow]:
             status="ACTIVE",
             last_updated=datetime.now(timezone.utc),
             version=1,
+            price_version=0, reference_stock=stock, demand_units=0, demand_events=0,
+            demand_state="NORMAL", pricing_reason="No price changes yet", price_direction="UNCHANGED",
         ))
     return products
 

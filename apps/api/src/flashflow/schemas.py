@@ -36,6 +36,11 @@ class Product(BaseModel):
     status: ProductStatus
     last_updated: datetime
     version: int = Field(ge=1)
+    price_version: int = Field(0, ge=0)
+    demand_state: str = "NORMAL"
+    pricing_reason: str = "No price changes yet"
+    price_direction: str = "UNCHANGED"
+    pricing_source: str = "RULES"
 
     @model_validator(mode="after")
     def reserved_cannot_exceed_stock(self) -> "Product":

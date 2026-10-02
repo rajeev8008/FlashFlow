@@ -47,8 +47,9 @@ services:
     environment:
       INVENTORY_TOPIC: ${KAFKA_INVENTORY_TOPIC:-inventory-events}
       DLQ_TOPIC: ${KAFKA_DLQ_TOPIC:-inventory-events-dlq}
+      PRICING_TOPIC: ${KAFKA_PRICING_TOPIC:-pricing-events}
       PARTITIONS: ${KAFKA_INVENTORY_PARTITIONS:-6}
-    command: ["sh", "-c", "for topic in \"$$INVENTORY_TOPIC\" \"$$DLQ_TOPIC\"; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic \"$$topic\" --partitions \"$$PARTITIONS\" --replication-factor 1 || exit 1; done"]
+    command: ["sh", "-c", "for topic in \"$$INVENTORY_TOPIC\" \"$$DLQ_TOPIC\" \"$$PRICING_TOPIC\"; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic \"$$topic\" --partitions \"$$PARTITIONS\" --replication-factor 1 || exit 1; done"]
 
   api:
     build: ./apps/api

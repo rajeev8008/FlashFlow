@@ -13,6 +13,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .inventory import process_event
+from .pricing import apply_decision, publish_decision
+from aiokafka.errors import KafkaError
 from .schemas import EventEnvelope
 from .resilience import DependencyUnavailable
 
@@ -84,7 +86,7 @@ class InventoryConsumer:
         self.faults = faults
         self.counters = Counter()
         self.redis = Redis.from_url(settings.redis_url, socket_timeout=1, socket_connect_timeout=1)
-        self.consumer = AIOKafkaConsumer(settings.kafka_inventory_topic,
+        self.consumer = AIOKafkaConsumer(settings.kafka_inventory_topic, settings.kafka_pricing_topic,
             bootstrap_servers=settings.kafka_bootstrap_servers, group_id=settings.kafka_consumer_group,
             enable_auto_commit=False, auto_offset_reset="earliest", max_poll_interval_ms=300000)
         self.producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_bootstrap_servers)
@@ -100,7 +102,9 @@ class InventoryConsumer:
                     raise ValueError("unsupported schema version or naive timestamp")
                 if record.key != str(event.product_id).encode():
                     raise ValueError("Kafka key must match product_id")
-                product, outcome = await process_event(event)
+                product, outcome = await (apply_decision(event) if record.topic == settings.kafka_pricing_topic else process_event(event))
+                if record.topic == settings.kafka_inventory_topic:
+                    await publish_decision(event, self.producer)
                 if getattr(self, "faults", None) and self.faults.redis_unavailable:
                     raise DependencyUnavailable("Redis failure injected")
                 # Replays repair cache/broadcast after a database commit interrupted by failure.
@@ -115,7 +119,7 @@ class InventoryConsumer:
                     if not isinstance(error, ValueError):
                         await asyncio.sleep(settings.consumer_retry_seconds * 2 ** (attempt - 1))
                 else:
-                    if isinstance(error, (ConnectionError, TimeoutError, RedisError, SQLAlchemyError)):
+                    if isinstance(error, (ConnectionError, TimeoutError, RedisError, SQLAlchemyError, KafkaError)):
                         # Infrastructure outages retain the Kafka offset; only bad events go to DLQ.
                         raise
                     failure = {"topic": record.topic, "partition": record.partition, "offset": record.offset,

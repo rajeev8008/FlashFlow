@@ -22,6 +22,44 @@ const envelope = (products: unknown[]) => ({
     breaker: { state: "CLOSED", retry_after_seconds: 0, transitions: [] },
   },
 });
+test("price-only Kafka snapshots update direction, reason and revision without stock rollback", async ({
+  page,
+}) => {
+  let socket: WebSocketRoute;
+  await page.route("**/api/products", (route) =>
+    route.fulfill({ json: envelope([product]) }),
+  );
+  await page.routeWebSocket("**/ws", (ws) => {
+    socket = ws;
+  });
+  await page.goto("/");
+  const card = page.locator('[data-product="a"]');
+  await expect(card).toHaveAttribute("data-version", "1");
+  socket!.send(
+    JSON.stringify({
+      type: "product_update",
+      product: {
+        ...product,
+        price_version: 1,
+        current_price: "10.50",
+        demand_state: "HIGH",
+        price_direction: "UP",
+        pricing_reason: "High demand target",
+        pricing_source: "RULES",
+      },
+    }),
+  );
+  await expect(card).toContainText("$10.50");
+  await expect(card).toContainText("↑ HIGH demand · RULES");
+  await expect(card).toHaveAttribute("data-version", "1");
+  await expect(card).toHaveAttribute("data-price-version", "1");
+  await card.locator("summary").click();
+  await expect(card).toContainText("High demand target");
+  // Periodic older catalog snapshots must not undo the delivered price.
+  await page.waitForTimeout(2300);
+  await expect(card).toContainText("$10.50");
+  await expect(card).toContainText("18 available");
+});
 test("live changes, isolation, benchmark modes, reconnect and degraded/offline states", async ({
   page,
   context,

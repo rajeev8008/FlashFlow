@@ -5,6 +5,7 @@ import {
   createBuffer,
   isProduct,
   isSnapshot,
+  isNewer,
   Product,
   reconnectDelay,
   useInventory,
@@ -21,6 +22,28 @@ const product: Product = {
   sales_velocity: 0,
   last_updated: "2026-10-02T00:00:00Z",
 };
+test("price-only revisions update cards without inventory rollback", () => {
+  const priced = { ...product, price_version: 1, current_price: "10.50" };
+  assert.ok(isNewer(priced, product));
+  assert.equal(isNewer({ ...product, version: 2 }, priced), false);
+  useInventory.setState({ productsById: {}, ids: [] });
+  applyProducts([product]);
+  applyProducts([priced]);
+  assert.equal(useInventory.getState().productsById.a.current_price, "10.50");
+  let callback: FrameRequestCallback = () => {};
+  const buffer = createBuffer(
+    applyProducts,
+    (cb) => {
+      callback = cb;
+      return 1;
+    },
+    () => {},
+  );
+  buffer.push({ ...priced, price_version: 2, current_price: "11.00" });
+  buffer.push({ ...priced, version: 2 });
+  callback(0);
+  assert.equal(useInventory.getState().productsById.a.current_price, "11.00");
+});
 test("trust boundary rejects invalid products", () => {
   assert.ok(isProduct(product));
   for (const invalid of [

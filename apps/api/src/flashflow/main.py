@@ -8,7 +8,9 @@ from sqlalchemy import select, text
 
 from .config import settings
 from .database import Session
-from .models import ProductRow
+from .models import ProductRow, PricingDecision
+from uuid import UUID
+from fastapi.encoders import jsonable_encoder
 from .schemas import Product
 from .stream import ConnectionManager, InventoryConsumer
 from .resilience import Catalog, Faults
@@ -38,7 +40,17 @@ async def lifespan(app: FastAPI):
         await catalog.redis.aclose()
 
 
-app = FastAPI(title="FlashFlow API", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="FlashFlow API", version="0.5.0", lifespan=lifespan)
+
+
+@app.get("/pricing/decisions")
+async def pricing_decisions(product_id: UUID | None = None, limit: int = 50):
+    query = select(PricingDecision).order_by(PricingDecision.created_at.desc()).limit(min(max(limit, 1), 200))
+    if product_id:
+        query = query.where(PricingDecision.product_id == str(product_id))
+    async with Session() as session:
+        rows = (await session.scalars(query)).all()
+        return [{column.name: jsonable_encoder(getattr(row, column.name)) for column in PricingDecision.__table__.columns} for row in rows]
 
 
 @app.get("/health")

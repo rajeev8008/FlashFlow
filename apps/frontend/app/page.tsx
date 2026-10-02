@@ -29,6 +29,7 @@ function Card({ product }: { product: Product }) {
       ref={element}
       data-product={product.product_id}
       data-version={product.version}
+      data-price-version={product.price_version ?? 0}
     >
       <div className="card-top">
         <small>{product.category}</small>
@@ -38,6 +39,28 @@ function Card({ product }: { product: Product }) {
       </div>
       <h2>{product.name}</h2>
       <p className="price">${Number(product.current_price).toFixed(2)}</p>
+      <p className="pricing-note">
+        {product.price_direction === "UP"
+          ? "↑"
+          : product.price_direction === "DOWN"
+            ? "↓"
+            : "—"}{" "}
+        {product.demand_state ?? "NORMAL"} demand ·{" "}
+        {product.pricing_source ?? "RULES"}
+      </p>
+      <details className="pricing-note">
+        <summary>
+          Price decision · revision {product.price_version ?? 0}
+        </summary>
+        <p>{product.pricing_reason ?? "No price changes yet"}</p>
+        <a
+          href={`/api/pricing?product_id=${encodeURIComponent(product.product_id)}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Inspect audit inputs and outcomes ↗
+        </a>
+      </details>
       <div className="inventory">
         <span>{available} available</span>
         <small>{product.reserved_stock} reserved</small>

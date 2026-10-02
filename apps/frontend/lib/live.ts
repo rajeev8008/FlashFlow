@@ -7,6 +7,11 @@ export type Product = {
   stock: number;
   reserved_stock: number;
   version: number;
+  price_version?: number;
+  demand_state?: string;
+  pricing_reason?: string;
+  price_direction?: string;
+  pricing_source?: string;
   status: string;
   sales_velocity: number;
   last_updated: string;
@@ -76,6 +81,15 @@ export function isProduct(value: unknown): value is Product {
     ].every((k) => typeof p[k] === "string" && (p[k] as string).length > 0) &&
     ["ACTIVE", "LOW_STOCK", "SOLD_OUT"].includes(p.status as string) &&
     Number(p.version) >= 1 &&
+    (p.price_version === undefined ||
+      (Number.isSafeInteger(p.price_version) &&
+        Number(p.price_version) >= 0)) &&
+    (p.demand_state === undefined ||
+      ["HIGH", "NORMAL", "LOW"].includes(p.demand_state as string)) &&
+    (p.price_direction === undefined ||
+      ["UP", "DOWN", "UNCHANGED"].includes(p.price_direction as string)) &&
+    (p.pricing_reason === undefined || typeof p.pricing_reason === "string") &&
+    (p.pricing_source === undefined || p.pricing_source === "RULES") &&
     Number.isFinite(Number(p.current_price)) &&
     Number(p.current_price) > 0 &&
     Number.isFinite(Date.parse(p.last_updated as string)) &&
@@ -115,14 +129,22 @@ export const useInventory = create<{
   staleSince: null,
   lastSnapshotAt: null,
 }));
+export function isNewer(p: Product, previous?: Product) {
+  return (
+    !previous ||
+    (p.version >= previous.version &&
+      (p.price_version ?? 0) >= (previous.price_version ?? 0) &&
+      (p.version > previous.version ||
+        (p.price_version ?? 0) > (previous.price_version ?? 0)))
+  );
+}
 export function applyProducts(products: Product[]) {
   useInventory.setState((state) => {
     const next = { ...state.productsById };
     let ids = state.ids,
       changed = false;
     for (const p of products) {
-      if (next[p.product_id] && p.version <= next[p.product_id].version)
-        continue;
+      if (!isNewer(p, next[p.product_id])) continue;
       if (!next[p.product_id]) ids = [...ids, p.product_id];
       next[p.product_id] = p;
       changed = true;
@@ -150,11 +172,7 @@ export function createBuffer(
   return {
     push(p: Product) {
       count++;
-      if (
-        !pending.has(p.product_id) ||
-        p.version > pending.get(p.product_id)!.version
-      )
-        pending.set(p.product_id, p);
+      if (isNewer(p, pending.get(p.product_id))) pending.set(p.product_id, p);
       if (frame === undefined) frame = schedule(drain);
     },
     drain() {
@@ -287,10 +305,7 @@ export function startLive() {
         }
         const p: Product = message.product;
         stats.events++;
-        if (
-          p.version <=
-          (useInventory.getState().productsById[p.product_id]?.version ?? -1)
-        )
+        if (!isNewer(p, useInventory.getState().productsById[p.product_id]))
           return;
         arrivals.set(p.product_id, performance.now());
         if (useInventory.getState().mode === "BATCHED") buffer.push(p);
