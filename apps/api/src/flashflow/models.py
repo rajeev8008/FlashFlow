@@ -26,3 +26,11 @@ class ProductRow(Base):
     status: Mapped[str] = mapped_column(String(20))
     last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class ProcessedEvent(Base):
+    __tablename__ = "processed_events"
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    product_id: Mapped[str] = mapped_column(String(36))
+    outcome: Mapped[str] = mapped_column(String(20))
+    processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

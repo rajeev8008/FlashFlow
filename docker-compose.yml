@@ -44,18 +44,11 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-    command:
-      - /opt/kafka/bin/kafka-topics.sh
-      - --bootstrap-server
-      - kafka:9092
-      - --create
-      - --if-not-exists
-      - --topic
-      - ${KAFKA_INVENTORY_TOPIC:-inventory-events}
-      - --partitions
-      - ${KAFKA_INVENTORY_PARTITIONS:-6}
-      - --replication-factor
-      - "1"
+    environment:
+      INVENTORY_TOPIC: ${KAFKA_INVENTORY_TOPIC:-inventory-events}
+      DLQ_TOPIC: ${KAFKA_DLQ_TOPIC:-inventory-events-dlq}
+      PARTITIONS: ${KAFKA_INVENTORY_PARTITIONS:-6}
+    command: ["sh", "-c", "for topic in \"$$INVENTORY_TOPIC\" \"$$DLQ_TOPIC\"; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic \"$$topic\" --partitions \"$$PARTITIONS\" --replication-factor 1 || exit 1; done"]
 
   api:
     build: ./apps/api
@@ -97,6 +90,8 @@ services:
 
   frontend:
     build: ./apps/frontend
+    environment:
+      API_INTERNAL_URL: http://api:8000
     depends_on:
       api:
         condition: service_healthy

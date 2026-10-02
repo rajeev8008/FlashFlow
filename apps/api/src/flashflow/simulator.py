@@ -4,7 +4,8 @@ import time
 from dataclasses import dataclass
 from enum import StrEnum
 
-from aiokafka import AIOKafkaProducer
+from aiokafka import AIOKafkaProducer, AIOKafkaConsumer, TopicPartition
+from aiokafka.admin import AIOKafkaAdminClient
 from sqlalchemy import select
 
 from .config import settings
@@ -84,10 +85,29 @@ def next_event(state: InventoryState, rng: random.Random, event_weights: dict[Ev
 
 async def load_catalog(count: int) -> list[InventoryState]:
     async with Session() as session:
-        rows = (await session.scalars(select(ProductRow).order_by(ProductRow.product_id).limit(count))).all()
+        rows = (await session.scalars(select(ProductRow).where(ProductRow.category != "Test").order_by(ProductRow.product_id).limit(count))).all()
     if not rows:
         raise RuntimeError("product catalog is empty; run the seed command first")
     return [InventoryState(row.product_id, row.stock, row.reserved_stock, row.version) for row in rows]
+
+
+async def wait_for_backlog() -> None:
+    """Load a fresh catalog only after previously published events finish processing."""
+    admin = AIOKafkaAdminClient(bootstrap_servers=settings.kafka_bootstrap_servers)
+    probe = AIOKafkaConsumer(bootstrap_servers=settings.kafka_bootstrap_servers)
+    try:
+        await admin.start()
+        await probe.start()
+        partitions = [TopicPartition(settings.kafka_inventory_topic, index) for index in range(settings.kafka_inventory_partitions)]
+        ends = await probe.end_offsets(partitions)
+        while True:
+            offsets = await admin.list_consumer_group_offsets(settings.kafka_consumer_group)
+            if all(offsets.get(partition) and offsets[partition].offset >= end or end == 0 for partition, end in ends.items()):
+                return
+            await asyncio.sleep(1)
+    finally:
+        await admin.close()
+        await probe.stop()
 
 
 async def run() -> None:
@@ -95,6 +115,7 @@ async def run() -> None:
     rate = settings.simulator_events_per_second or DEFAULT_RATES[mode]
     rng = random.Random(settings.simulator_random_seed)
     event_weights = parse_event_mix(settings.simulator_event_mix)
+    await wait_for_backlog()
     catalog = await load_catalog(settings.simulator_product_count)
     producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_bootstrap_servers)
     await producer.start()

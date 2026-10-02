@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     kafka_bootstrap_servers: str = "kafka:9092"
     kafka_inventory_topic: str = "inventory-events"
     kafka_inventory_partitions: int = Field(6, ge=1)
+    kafka_consumer_group: str = "flashflow-inventory"
+    kafka_dlq_topic: str = "inventory-events-dlq"
+    consumer_max_attempts: int = Field(3, ge=1)
+    consumer_retry_seconds: float = Field(0.5, ge=0)
+    websocket_heartbeat_seconds: float = Field(15, gt=0)
     simulator_mode: Literal["NORMAL", "BUSY", "FLASH_SALE", "EXTREME"] = "NORMAL"
     simulator_events_per_second: int | None = Field(None, ge=1)
     simulator_product_count: int = Field(100, ge=1, le=1000)
