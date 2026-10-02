@@ -1,0 +1,13 @@
+phases.md
+CODEX_PHASE_PROMPTS.md
+.env
+.venv/
+.tmp/
+.deps/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+build/
+*.egg-info/
+node_modules/
+.next/
