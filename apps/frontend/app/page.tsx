@@ -1,69 +1,241 @@
 "use client";
-
-import { useEffect, useState } from "react";
-
-type Product = {
-  product_id: string; name: string; category: string; current_price: string;
-  stock: number; reserved_stock: number; version: number; status: string;
-};
-
-function isProduct(value: unknown): value is Product {
-  if (!value || typeof value !== "object") return false;
-  const p = value as Record<string, unknown>;
-  return ["product_id", "name", "category", "current_price", "status"].every(key => typeof p[key] === "string")
-    && ["stock", "reserved_stock", "version"].every(key => typeof p[key] === "number" && Number.isInteger(p[key]) && (p[key] as number) >= 0)
-    && (p.reserved_stock as number) <= (p.stock as number);
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  arrivals,
+  Mode,
+  Product,
+  startLive,
+  stats,
+  useInventory,
+} from "../lib/live";
+function Card({ product }: { product: Product }) {
+  const element = useRef<HTMLElement>(null);
+  const commits = useRef(0);
+  useLayoutEffect(() => {
+    commits.current++;
+    stats.renders++;
+    element.current?.setAttribute("data-commits", String(commits.current));
+    const arrival = arrivals.get(product.product_id);
+    if (arrival !== undefined) {
+      stats.latency += performance.now() - arrival;
+      stats.samples++;
+      arrivals.delete(product.product_id);
+    }
+  });
+  const available = product.stock - product.reserved_stock;
+  return (
+    <article
+      ref={element}
+      data-product={product.product_id}
+      data-version={product.version}
+    >
+      <div className="card-top">
+        <small>{product.category}</small>
+        <span className={`pill ${available ? "" : "sold"}`}>
+          {product.status.replaceAll("_", " ")}
+        </span>
+      </div>
+      <h2>{product.name}</h2>
+      <p className="price">${Number(product.current_price).toFixed(2)}</p>
+      <div className="inventory">
+        <span>{available} available</span>
+        <small>{product.reserved_stock} reserved</small>
+      </div>
+      <progress
+        aria-label={`${product.name} available inventory`}
+        value={available}
+        max={Math.max(product.stock, 1)}
+      />
+      <div className="card-bottom">
+        <span>↗ {product.sales_velocity.toFixed(1)} sales/s</span>
+        <time
+          dateTime={product.last_updated}
+          title={`Last updated: ${product.last_updated}`}
+        >
+          {new Date(product.last_updated).toLocaleTimeString()}
+        </time>
+      </div>
+      <small className="version">Version {product.version}</small>
+    </article>
+  );
 }
-
-export default function Home() {
-  const [products, setProducts] = useState<Record<string, Product>>({});
-  const [status, setStatus] = useState("CONNECTING");
+function AtomicCard({ id }: { id: string }) {
+  const product = useInventory((state) => state.productsById[id]);
+  return <Card product={product} />;
+}
+const MemoizedCard = memo(AtomicCard);
+function Grid({ mode }: { mode: Mode }) {
+  const ids = useInventory((state) => state.ids);
+  // Benchmark parent pulse: ATOMIC exposes parent-driven renders, MEMOIZED skips them.
+  const [pulse, setPulse] = useState(0);
   useEffect(() => {
-    let stopped = false;
-    let socket: WebSocket;
-    let retry: ReturnType<typeof setTimeout>;
-    let heartbeat: ReturnType<typeof setInterval>;
-    function merge(items: Product[]) {
-      setProducts(previous => {
-        const next = { ...previous };
-        for (const item of items) if (!next[item.product_id] || next[item.product_id].version <= item.version) next[item.product_id] = item;
-        return next;
-      });
-    }
-    function connect() {
-      socket = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:8000/ws`);
-      socket.onopen = async () => {
-        setStatus("LIVE");
-        heartbeat = setInterval(() => { if (socket.readyState === WebSocket.OPEN) socket.send("pong"); }, 10000);
-        try {
-          const response = await fetch("/api/products");
-          if (!response.ok) throw new Error("Catalog unavailable");
-          const catalog: unknown = await response.json();
-          if (!Array.isArray(catalog) || !catalog.every(isProduct)) throw new Error("Invalid catalog");
-          if (!stopped) merge(catalog);
-        } catch { if (!stopped) setStatus("CATALOG UNAVAILABLE"); }
-      };
-      socket.onmessage = event => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === "heartbeat") socket.send("pong");
-          else if (message.type === "product_update" && isProduct(message.product)) merge([message.product]);
-        } catch { setStatus("INVALID UPDATE"); }
-      };
-      socket.onclose = () => {
-        clearInterval(heartbeat);
-        if (!stopped) { setStatus("RECONNECTING"); retry = setTimeout(connect, 2000); }
-      };
-      socket.onerror = () => socket.close();
-    }
-    connect();
-    return () => { stopped = true; clearTimeout(retry); clearInterval(heartbeat); socket.close(); };
+    const timer = setInterval(() => setPulse((n) => n + 1), 1000);
+    return () => clearInterval(timer);
   }, []);
-  return <main><p className="eyebrow">FLASHFLOW · LIVE INVENTORY</p><h1>FlashFlow</h1>
-    <p role="status" aria-live="polite">{status} · {Object.keys(products).length} products</p>
-    <div className="grid">{Object.values(products).map(product => <article key={product.product_id}>
-      <small>{product.category}</small><h2>{product.name}</h2><p>${Number(product.current_price).toFixed(2)}</p>
-      <p>Available: {product.stock - product.reserved_stock} · Reserved: {product.reserved_stock}</p>
-      <small>{product.status} · Version {product.version}</small>
-    </article>)}</div></main>;
+  const Component = mode === "ATOMIC" ? AtomicCard : MemoizedCard;
+  return (
+    <div className="grid" data-pulse={pulse}>
+      {ids.map((id) => (
+        <Component key={id} id={id} />
+      ))}
+    </div>
+  );
+}
+function NaiveGrid() {
+  const products = useInventory((state) => state.productsById);
+  return (
+    <div className="grid">
+      {Object.values(products).map((product) => (
+        <Card key={product.product_id} product={product} />
+      ))}
+    </div>
+  );
+}
+function EngineeringPanel() {
+  const [metrics, setMetrics] = useState({
+    events: 0,
+    flushes: 0,
+    merged: 0,
+    renders: 0,
+    latency: 0,
+    fps: 0,
+  });
+  useEffect(() => {
+    let previous = { ...stats },
+      started = performance.now(),
+      frame = 0;
+    function tick() {
+      stats.frames++;
+      frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+    const timer = setInterval(() => {
+      const now = performance.now(),
+        seconds = (now - started) / 1000;
+      const flushes = stats.flushes - previous.flushes,
+        samples = stats.samples - previous.samples;
+      setMetrics({
+        events: (stats.events - previous.events) / seconds,
+        flushes: flushes / seconds,
+        merged: flushes ? (stats.merged - previous.merged) / flushes : 0,
+        renders: (stats.renders - previous.renders) / seconds,
+        latency: samples ? (stats.latency - previous.latency) / samples : 0,
+        fps: (stats.frames - previous.frames) / seconds,
+      });
+      previous = { ...stats };
+      started = now;
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+  const labels: Record<string, string> = {
+    events: "Socket events/s",
+    flushes: "UI flushes/s",
+    merged: "Events/flush",
+    renders: "Card commits/s",
+    latency: "Receipt → commit ms",
+    fps: "Estimated FPS",
+  };
+  return (
+    <section className="engineering" aria-label="Engineering metrics">
+      <div>
+        <p className="eyebrow">UNDER THE HOOD</p>
+        <h2>Rendering, measured.</h2>
+        <p>One-second samples · real browser activity</p>
+      </div>
+      <dl>
+        {Object.entries(metrics).map(([key, value]) => (
+          <div key={key}>
+            <dt>{labels[key]}</dt>
+            <dd data-metric={key}>{value.toFixed(1)}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+export default function Home() {
+  const connection = useInventory((state) => state.connection);
+  const mode = useInventory((state) => state.mode);
+  const count = useInventory((state) => state.ids.length);
+  useEffect(startLive, []);
+  return (
+    <main>
+      <header>
+        <a className="brand" href="/">
+          F<span>↗</span> FlashFlow
+        </a>
+        <span
+          className={`connection ${connection === "LIVE" ? "live" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          ● {connection}
+        </span>
+      </header>
+      <section className="hero">
+        <p className="eyebrow">THE DROP IS LIVE</p>
+        <h1>
+          Fast sales.
+          <br />
+          <span>Calm interface.</span>
+        </h1>
+        <p>Live prices. Moving inventory. Every update, without the noise.</p>
+        <div className="hero-meta">
+          <span>{count} products on the floor</span>
+          <span>Kafka → PostgreSQL → WebSocket</span>
+        </div>
+      </section>
+      <EngineeringPanel />
+      <section className="toolbar">
+        <div>
+          <h2>The live collection</h2>
+          <p>Stock and prices update as events arrive.</p>
+        </div>
+        <label>
+          Render mode
+          <select
+            value={mode}
+            onChange={(event) =>
+              useInventory.setState({ mode: event.target.value as Mode })
+            }
+          >
+            {["NAIVE", "ATOMIC", "MEMOIZED", "BATCHED"].map((value) => (
+              <option key={value}>{value}</option>
+            ))}
+          </select>
+        </label>
+      </section>
+      <p className="mode-note">
+        {
+          {
+            NAIVE: "Whole-grid subscription · immediate updates",
+            ATOMIC:
+              "Product subscriptions · immediate updates · unmemoized parent pulse",
+            MEMOIZED:
+              "Product subscriptions · memoized cards · immediate updates",
+            BATCHED:
+              "Product subscriptions · memoized cards · latest update per animation frame",
+          }[mode]
+        }
+      </p>
+      {count ? (
+        mode === "NAIVE" ? (
+          <NaiveGrid />
+        ) : (
+          <Grid mode={mode} />
+        )
+      ) : (
+        <p className="empty">
+          Waiting for the catalog… The connection will retry automatically.
+        </p>
+      )}
+      <footer>
+        FLASHFLOW · Performance is a feature. Metrics describe this browser, not
+        backend throughput.
+      </footer>
+    </main>
+  );
 }

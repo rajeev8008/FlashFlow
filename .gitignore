@@ -11,3 +11,6 @@ build/
 *.egg-info/
 node_modules/
 .next/
+*.tsbuildinfo
+test-results/
+playwright-report/
