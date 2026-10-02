@@ -1,6 +1,6 @@
 # FlashFlow
 
-Phase 1 foundation for a real-time retail surge platform: FastAPI, PostgreSQL, Redis, Kafka, a deterministic catalog, an asynchronous traffic simulator, and a Next.js TypeScript shell.
+FlashFlow streams simulated retail inventory through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js client over WebSockets. Phases 1 and 2 are implemented.
 
 ## Start locally
 
@@ -52,19 +52,41 @@ Copy `.env.example` to `.env`. Important settings:
 
 Mode defaults are 10, 100, 500, and 2,000 events/sec respectively. Explicit `SIMULATOR_EVENTS_PER_SECOND` takes precedence.
 
-## Phase 1 architecture
+Run the live integration and restart checks against the running stack:
 
-```text
-PostgreSQL <- migrations + deterministic seed <- FastAPI
-                                               |
-seeded catalog -> async simulator -> Kafka inventory-events
-
-Redis <- connectivity health check
-Next.js <- foundation page (real-time UI intentionally deferred)
+```bash
+docker compose exec api python tests/integration_phase2.py
+docker compose restart api
+docker compose exec api python tests/integration_phase2.py --restart-check
 ```
 
-PostgreSQL is the durable catalog. Redis is connected but intentionally has no cache behavior yet. The simulator maintains a private evolving stock view so it only emits valid inventory transitions; consuming and persisting those events begins in Phase 2.
+The integration probe creates an isolated product, verifies two WebSocket clients, Redis, duplicate/stale handling, and DLQ publication. Wait for `/health` to return OK after restarting the API.
+
+## Phase 2 architecture
+
+```text
+seeded catalog -> simulator -> Kafka inventory-events
+                                 |
+                          FastAPI async consumer
+                                 |
+                     PostgreSQL transaction + event ledger
+                                 |
+                         Redis product snapshots
+                                 |
+                         WebSocket /ws -> Next.js
+invalid/exhausted events -> inventory-events-dlq
+```
+
+PostgreSQL updates and event-ID receipts commit together under a product row lock. Duplicate events cannot double-apply, stale versions are ignored, and version gaps or invalid stock transitions are retried and dead-lettered. Payload snapshots are checked against computed transitions rather than trusted as inventory state.
+
+Kafka auto-commit is disabled. Each partition offset advances only after database/cache processing and broadcast enqueue, or acknowledged DLQ publication. A cache failure after a database commit is repaired on replay without applying the event again. DLQ publication or offset-commit failures retry the same record. Delivery to browsers is best-effort; reconnecting clients fetch a durable catalog snapshot and ignore older versions.
+
+WebSockets use heartbeat messages and client `pong` replies. Each client has a bounded queue; slow clients disconnect and reconnect without blocking the consumer. `/metrics` exposes processed, failed-attempt, duplicate, stale, DLQ, and active-client counters. Counters reset when the API restarts. Structured JSON event-failure and connection logs are written to container output.
+
+Additional configuration: `KAFKA_CONSUMER_GROUP`, `KAFKA_DLQ_TOPIC`, `CONSUMER_MAX_ATTEMPTS`, `CONSUMER_RETRY_SECONDS`, and `WEBSOCKET_HEARTBEAT_SECONDS`; defaults are listed in `.env.example`.
 
 ## Current limits
 
-Phase 1 deliberately excludes Kafka consumption, WebSockets, dynamic pricing, fault injection, and benchmark claims.
+Run one API worker and one simulator. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages exceeding retries can leave its snapshot behind PostgreSQL until another event or replay repairs it. The event ledger is retained indefinitely for this portfolio scope.
+
+The basic client updates React state per message and reconnects every two seconds. Phase 3 adds atomic subscriptions, exponential backoff, and rendering batches. Dynamic pricing, fault injection, authentication, production TLS, and measured benchmarks remain later work. This Compose stack is for local development.
