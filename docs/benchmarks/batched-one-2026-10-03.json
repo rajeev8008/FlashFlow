@@ -1,0 +1,1628 @@
+{
+  "kind": "real-pipeline",
+  "label": "batched-one-consumer",
+  "recorded_at": "2026-10-03T12:43:08.119588+00:00",
+  "notes": "Same-host clocks; API-colocated generator; latest 100000 socket latency samples; rolling 4096 backend stage samples; no rendered latency or FPS",
+  "results": [
+    {
+      "configured_rate": 500,
+      "configured_seconds": 6,
+      "produced": 2992,
+      "producer_seconds": 6.00513790399998,
+      "actual_producer_rate": 498.24001510557315,
+      "drained": true,
+      "drain_seconds": 2.020088256000008,
+      "socket_messages": 3182,
+      "event_to_client_ms": {
+        "p50": 677.685,
+        "p95": 1057.932,
+        "p99": 1255.314
+      },
+      "enqueue_to_client_ms": {
+        "p50": 0.361,
+        "p95": 0.985,
+        "p99": 1.659
+      },
+      "latency_window_count": 3182,
+      "maximum_sampled_lag": 499,
+      "errors": [],
+      "backend_before": {
+        "processed": 0,
+        "failed": 0,
+        "duplicate": 0,
+        "stale": 0,
+        "dlq": 0,
+        "kafka_received": 0,
+        "pricing_received": 0,
+        "completed": 0,
+        "inventory_completed": 0,
+        "rates": {
+          "kafka_events_per_second": 0.0,
+          "processed_events_per_second": 0.0,
+          "pricing_events_per_second": 0.0,
+          "websocket_messages_per_second": 0.0,
+          "broker_produced_per_second": 0.0
+        },
+        "consumer_lag": 0,
+        "lag_by_topic": {
+          "inventory-events": 0,
+          "pricing-events": 0
+        },
+        "lag_by_partition": {
+          "inventory-events:1": 0,
+          "inventory-events:0": 0,
+          "inventory-events:3": 0,
+          "inventory-events:2": 0,
+          "inventory-events:5": 0,
+          "inventory-events:4": 0,
+          "pricing-events:2": 0,
+          "pricing-events:3": 0,
+          "pricing-events:4": 0,
+          "pricing-events:5": 0,
+          "pricing-events:0": 0,
+          "pricing-events:1": 0
+        },
+        "sampled_at": "2026-10-03T12:42:57.377427+00:00",
+        "process_cpu_percent": 1.135635073193948,
+        "process_rss_bytes": 78970880,
+        "process_peak_rss_bytes": 78970880,
+        "stage_latencies": {},
+        "active_websocket_clients": 0,
+        "websocket_messages": 0,
+        "slow_client_disconnects": 0,
+        "redis_cache_reads": 0,
+        "redis_cache_hits": 0,
+        "redis_cache_hit_rate": null,
+        "inventory_circuit": {
+          "state": "CLOSED",
+          "failures": 0,
+          "transitions": [],
+          "retry_after_seconds": 0
+        },
+        "consumer_paused": false,
+        "consumer_instances": 1,
+        "consumer_batch_size": 50,
+        "consumer_batch_enabled": true,
+        "failed_socket_sends": 0
+      },
+      "backend_after": {
+        "processed": 3182,
+        "failed": 0,
+        "duplicate": 0,
+        "stale": 0,
+        "dlq": 0,
+        "kafka_received": 3182,
+        "pricing_received": 190,
+        "completed": 3182,
+        "inventory_completed": 2992,
+        "rates": {
+          "kafka_events_per_second": 52.751625643735906,
+          "processed_events_per_second": 63.20241940334397,
+          "pricing_events_per_second": 25.878155976172334,
+          "websocket_messages_per_second": 63.20241940334397,
+          "broker_produced_per_second": 0.0
+        },
+        "consumer_lag": 0,
+        "lag_by_topic": {
+          "inventory-events": 0,
+          "pricing-events": 0
+        },
+        "lag_by_partition": {
+          "inventory-events:1": 0,
+          "inventory-events:0": 0,
+          "inventory-events:3": 0,
+          "inventory-events:2": 0,
+          "inventory-events:5": 0,
+          "inventory-events:4": 0,
+          "pricing-events:2": 0,
+          "pricing-events:3": 0,
+          "pricing-events:4": 0,
+          "pricing-events:5": 0,
+          "pricing-events:0": 0,
+          "pricing-events:1": 0
+        },
+        "sampled_at": "2026-10-03T12:43:07.670616+00:00",
+        "process_cpu_percent": 15.355764326174048,
+        "process_rss_bytes": 85393408,
+        "process_peak_rss_bytes": 85393408,
+        "stage_latencies": {
+          "database_batch": {
+            "count": 133,
+            "window_count": 133,
+            "total_ms": 3075.122246000774,
+            "p50_ms": 20.80395000007229,
+            "p95_ms": 45.25283399993896,
+            "p99_ms": 54.9258540000892
+          },
+          "database_amortized": {
+            "count": 133,
+            "window_count": 133,
+            "total_ms": 279.9297229125714,
+            "p50_ms": 1.058642400005283,
+            "p95_ms": 6.961152000030779,
+            "p99_ms": 11.6458769999781
+          },
+          "pricing_publish_batch": {
+            "count": 133,
+            "window_count": 133,
+            "total_ms": 789.9410960008026,
+            "p50_ms": 5.5618349999804195,
+            "p95_ms": 12.428685000031692,
+            "p99_ms": 15.464674999975614
+          },
+          "consumer_queue_wait": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 636390.8159999994,
+            "p50_ms": 183.895,
+            "p95_ms": 401.426,
+            "p99_ms": 446.289
+          },
+          "producer_to_consumer": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 1523740.4380000017,
+            "p50_ms": 470.78,
+            "p95_ms": 832.21,
+            "p99_ms": 1104.855
+          },
+          "redis": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 1040.2837249979484,
+            "p50_ms": 0.2580939999461407,
+            "p95_ms": 0.6580470000017158,
+            "p99_ms": 1.0297160000618533
+          },
+          "websocket_enqueue": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 17.62737899991862,
+            "p50_ms": 0.004304999947635224,
+            "p95_ms": 0.01148800004102668,
+            "p99_ms": 0.017683999999462685
+          },
+          "processing": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 2539.4432550036754,
+            "p50_ms": 0.3206080000381917,
+            "p95_ms": 5.29350700003306,
+            "p99_ms": 8.36233200004699
+          },
+          "processing_batch": {
+            "count": 209,
+            "window_count": 209,
+            "total_ms": 6484.29511999916,
+            "p50_ms": 26.448490999996466,
+            "p95_ms": 67.78190300008191,
+            "p99_ms": 90.8663019999949
+          },
+          "websocket_queue": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 669.5489999999982,
+            "p50_ms": 0.161,
+            "p95_ms": 0.47,
+            "p99_ms": 0.714
+          },
+          "websocket_send": {
+            "count": 3182,
+            "window_count": 3182,
+            "total_ms": 381.2249550020397,
+            "p50_ms": 0.09303499996349274,
+            "p95_ms": 0.23947399995449814,
+            "p99_ms": 0.3803070000003572
+          },
+          "offset_commit": {
+            "count": 209,
+            "window_count": 209,
+            "total_ms": 245.5035340003633,
+            "p50_ms": 1.0321280000198385,
+            "p95_ms": 1.8511959999614191,
+            "p99_ms": 3.2460779999610168
+          },
+          "database": {
+            "count": 190,
+            "window_count": 190,
+            "total_ms": 1243.9156680011365,
+            "p50_ms": 5.768439000007675,
+            "p95_ms": 10.726537999971697,
+            "p99_ms": 24.491102000069986
+          }
+        },
+        "active_websocket_clients": 0,
+        "websocket_messages": 3182,
+        "slow_client_disconnects": 0,
+        "redis_cache_reads": 0,
+        "redis_cache_hits": 0,
+        "redis_cache_hit_rate": null,
+        "inventory_circuit": {
+          "state": "CLOSED",
+          "failures": 0,
+          "transitions": [],
+          "retry_after_seconds": 0
+        },
+        "consumer_paused": false,
+        "consumer_instances": 1,
+        "consumer_batch_size": 50,
+        "consumer_batch_enabled": true,
+        "failed_socket_sends": 0
+      },
+      "samples": [
+        {
+          "elapsed_seconds": 0.0042687239999850135,
+          "processed": 0,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 0,
+          "pricing_received": 0,
+          "completed": 0,
+          "inventory_completed": 0,
+          "rates": {
+            "kafka_events_per_second": 0.0,
+            "processed_events_per_second": 0.0,
+            "pricing_events_per_second": 0.0,
+            "websocket_messages_per_second": 0.0,
+            "broker_produced_per_second": 0.0
+          },
+          "consumer_lag": 0,
+          "lag_by_topic": {
+            "inventory-events": 0,
+            "pricing-events": 0
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 0,
+            "inventory-events:0": 0,
+            "inventory-events:3": 0,
+            "inventory-events:2": 0,
+            "inventory-events:5": 0,
+            "inventory-events:4": 0,
+            "pricing-events:2": 0,
+            "pricing-events:3": 0,
+            "pricing-events:4": 0,
+            "pricing-events:5": 0,
+            "pricing-events:0": 0,
+            "pricing-events:1": 0
+          },
+          "sampled_at": "2026-10-03T12:42:57.377427+00:00",
+          "process_cpu_percent": 1.135635073193948,
+          "process_rss_bytes": 78970880,
+          "process_peak_rss_bytes": 78970880,
+          "stage_latencies": {},
+          "active_websocket_clients": 1,
+          "websocket_messages": 0,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 1.007851923999965,
+          "processed": 194,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 234,
+          "pricing_received": 0,
+          "completed": 194,
+          "inventory_completed": 194,
+          "rates": {
+            "kafka_events_per_second": 27.209013289008432,
+            "processed_events_per_second": 24.735466626371302,
+            "pricing_events_per_second": 0.0,
+            "websocket_messages_per_second": 24.735466626371302,
+            "broker_produced_per_second": 69.75401588636707
+          },
+          "consumer_lag": 91,
+          "lag_by_topic": {
+            "inventory-events": 91,
+            "pricing-events": 0
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 12,
+            "inventory-events:0": 15,
+            "inventory-events:3": 17,
+            "inventory-events:2": 13,
+            "inventory-events:5": 17,
+            "inventory-events:4": 17,
+            "pricing-events:2": 0,
+            "pricing-events:3": 0,
+            "pricing-events:4": 0,
+            "pricing-events:5": 0,
+            "pricing-events:0": 0,
+            "pricing-events:1": 0
+          },
+          "sampled_at": "2026-10-03T12:42:59.386545+00:00",
+          "process_cpu_percent": 9.994211930492245,
+          "process_rss_bytes": 80887808,
+          "process_peak_rss_bytes": 80887808,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 27,
+              "window_count": 27,
+              "total_ms": 442.37711000039326,
+              "p50_ms": 12.277440000048045,
+              "p95_ms": 54.89466399990306,
+              "p99_ms": 61.4068639999914
+            },
+            "database_amortized": {
+              "count": 27,
+              "window_count": 27,
+              "total_ms": 143.19264249884722,
+              "p50_ms": 3.411316666680856,
+              "p95_ms": 11.6458769999781,
+              "p99_ms": 26.06199000001652
+            },
+            "pricing_publish_batch": {
+              "count": 27,
+              "window_count": 27,
+              "total_ms": 84.0364700001146,
+              "p50_ms": 2.3366320000377527,
+              "p95_ms": 8.426301999975294,
+              "p99_ms": 14.804044000015892
+            },
+            "consumer_queue_wait": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 19103.606000000007,
+              "p50_ms": 88.32900000000001,
+              "p95_ms": 180.30599999999998,
+              "p99_ms": 182.571
+            },
+            "producer_to_consumer": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 40295.28299999998,
+              "p50_ms": 155.971,
+              "p95_ms": 520.598,
+              "p99_ms": 562.981
+            },
+            "redis": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 69.62266300115516,
+              "p50_ms": 0.29832700010956614,
+              "p95_ms": 0.705754000023262,
+              "p99_ms": 1.2950990000035745
+            },
+            "websocket_enqueue": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 1.1011419998112615,
+              "p50_ms": 0.004600000011123484,
+              "p95_ms": 0.011764999953811639,
+              "p99_ms": 0.017889999980980065
+            },
+            "processing": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 86.3166100006083,
+              "p50_ms": 0.3770939999867551,
+              "p95_ms": 0.8347509999566682,
+              "p99_ms": 1.463607999994565
+            },
+            "processing_batch": {
+              "count": 27,
+              "window_count": 27,
+              "total_ms": 618.9723749997711,
+              "p50_ms": 16.553608999970493,
+              "p95_ms": 79.84186600003795,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 40.05600000000003,
+              "p50_ms": 0.17,
+              "p95_ms": 0.424,
+              "p99_ms": 0.508
+            },
+            "websocket_send": {
+              "count": 194,
+              "window_count": 194,
+              "total_ms": 24.828490999652786,
+              "p50_ms": 0.10885300002883014,
+              "p95_ms": 0.23610400000961818,
+              "p99_ms": 0.3223330000992064
+            },
+            "offset_commit": {
+              "count": 27,
+              "window_count": 27,
+              "total_ms": 27.873289000012846,
+              "p50_ms": 1.0321280000198385,
+              "p95_ms": 1.4070400000036898,
+              "p99_ms": 1.4783020000095348
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 194,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 2.015711890000034,
+          "processed": 741,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 741,
+          "pricing_received": 10,
+          "completed": 741,
+          "inventory_completed": 731,
+          "rates": {
+            "kafka_events_per_second": 27.209013289008432,
+            "processed_events_per_second": 24.735466626371302,
+            "pricing_events_per_second": 0.0,
+            "websocket_messages_per_second": 24.735466626371302,
+            "broker_produced_per_second": 69.75401588636707
+          },
+          "consumer_lag": 91,
+          "lag_by_topic": {
+            "inventory-events": 91,
+            "pricing-events": 0
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 12,
+            "inventory-events:0": 15,
+            "inventory-events:3": 17,
+            "inventory-events:2": 13,
+            "inventory-events:5": 17,
+            "inventory-events:4": 17,
+            "pricing-events:2": 0,
+            "pricing-events:3": 0,
+            "pricing-events:4": 0,
+            "pricing-events:5": 0,
+            "pricing-events:0": 0,
+            "pricing-events:1": 0
+          },
+          "sampled_at": "2026-10-03T12:42:59.386545+00:00",
+          "process_cpu_percent": 9.994211930492245,
+          "process_rss_bytes": 80887808,
+          "process_peak_rss_bytes": 80887808,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 49,
+              "window_count": 49,
+              "total_ms": 1014.4167330003029,
+              "p50_ms": 13.170976000083101,
+              "p95_ms": 51.609003999942615,
+              "p99_ms": 61.4068639999914
+            },
+            "database_amortized": {
+              "count": 49,
+              "window_count": 49,
+              "total_ms": 191.93590641801347,
+              "p50_ms": 2.457247400002416,
+              "p95_ms": 10.382243999970342,
+              "p99_ms": 26.06199000001652
+            },
+            "pricing_publish_batch": {
+              "count": 49,
+              "window_count": 49,
+              "total_ms": 191.42295500012096,
+              "p50_ms": 2.5179260001095827,
+              "p95_ms": 12.186563000000206,
+              "p99_ms": 14.804044000015892
+            },
+            "consumer_queue_wait": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 154494.12699999983,
+              "p50_ms": 182.255,
+              "p95_ms": 439.888,
+              "p99_ms": 448.23600000000005
+            },
+            "producer_to_consumer": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 227508.965,
+              "p50_ms": 317.592,
+              "p95_ms": 551.8629999999999,
+              "p99_ms": 584.842
+            },
+            "redis": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 244.56132900149896,
+              "p50_ms": 0.25751099997251004,
+              "p95_ms": 0.6744739999930971,
+              "p99_ms": 0.9597039999107437
+            },
+            "websocket_enqueue": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 4.060579000793041,
+              "p50_ms": 0.004212000021652784,
+              "p95_ms": 0.011508000056892342,
+              "p99_ms": 0.016918000028454117
+            },
+            "processing": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 375.77065600180504,
+              "p50_ms": 0.3184010000722992,
+              "p95_ms": 0.8668330000318747,
+              "p99_ms": 5.920986999967681
+            },
+            "processing_batch": {
+              "count": 56,
+              "window_count": 56,
+              "total_ms": 1600.8486029995765,
+              "p50_ms": 16.553608999970493,
+              "p95_ms": 71.67362299992419,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 149.8180000000002,
+              "p50_ms": 0.157,
+              "p95_ms": 0.422,
+              "p99_ms": 0.575
+            },
+            "websocket_send": {
+              "count": 741,
+              "window_count": 741,
+              "total_ms": 88.06341599915868,
+              "p50_ms": 0.09293499999785126,
+              "p95_ms": 0.23610400000961818,
+              "p99_ms": 0.33196399999724235
+            },
+            "offset_commit": {
+              "count": 55,
+              "window_count": 55,
+              "total_ms": 59.041906999937055,
+              "p50_ms": 1.0242560000506273,
+              "p95_ms": 1.5938620000497394,
+              "p99_ms": 1.9986820000212902
+            },
+            "database": {
+              "count": 10,
+              "window_count": 10,
+              "total_ms": 72.40925300004619,
+              "p50_ms": 5.967982000015581,
+              "p95_ms": 11.060040000074878,
+              "p99_ms": 11.060040000074878
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 741,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 3.02470491400004,
+          "processed": 1278,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 1303,
+          "pricing_received": 34,
+          "completed": 1278,
+          "inventory_completed": 1244,
+          "rates": {
+            "kafka_events_per_second": 414.5411855321945,
+            "processed_events_per_second": 402.59762196343985,
+            "pricing_events_per_second": 7.962375712503136,
+            "websocket_messages_per_second": 402.59762196343985,
+            "broker_produced_per_second": 500.6343729236347
+          },
+          "consumer_lag": 311,
+          "lag_by_topic": {
+            "inventory-events": 304,
+            "pricing-events": 7
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 34,
+            "inventory-events:0": 24,
+            "inventory-events:3": 74,
+            "inventory-events:2": 56,
+            "inventory-events:5": 77,
+            "inventory-events:4": 39,
+            "pricing-events:2": 0,
+            "pricing-events:3": 0,
+            "pricing-events:4": 0,
+            "pricing-events:5": 0,
+            "pricing-events:0": 4,
+            "pricing-events:1": 3
+          },
+          "sampled_at": "2026-10-03T12:43:01.394536+00:00",
+          "process_cpu_percent": 55.639125720437534,
+          "process_rss_bytes": 83075072,
+          "process_peak_rss_bytes": 83075072,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 69,
+              "window_count": 69,
+              "total_ms": 1491.9673100001773,
+              "p50_ms": 18.140510000080212,
+              "p95_ms": 45.25283399993896,
+              "p99_ms": 61.4068639999914
+            },
+            "database_amortized": {
+              "count": 69,
+              "window_count": 69,
+              "total_ms": 210.98858422142294,
+              "p50_ms": 1.4130058928571998,
+              "p95_ms": 9.398612999916622,
+              "p99_ms": 26.06199000001652
+            },
+            "pricing_publish_batch": {
+              "count": 69,
+              "window_count": 69,
+              "total_ms": 310.01707100017484,
+              "p50_ms": 3.0011679999688567,
+              "p95_ms": 10.23901600001409,
+              "p99_ms": 14.804044000015892
+            },
+            "consumer_queue_wait": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 245057.0349999998,
+              "p50_ms": 176.886,
+              "p95_ms": 405.16999999999996,
+              "p99_ms": 446.835
+            },
+            "producer_to_consumer": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 442376.5359999996,
+              "p50_ms": 362.53400000000005,
+              "p95_ms": 551.493,
+              "p99_ms": 573.609
+            },
+            "redis": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 399.96798200149897,
+              "p50_ms": 0.2561999999670661,
+              "p95_ms": 0.6098449999853983,
+              "p99_ms": 0.9537009999576185
+            },
+            "websocket_enqueue": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 6.654383999602942,
+              "p50_ms": 0.004246000003149675,
+              "p95_ms": 0.009823000027608941,
+              "p99_ms": 0.015267999970092205
+            },
+            "processing": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 709.445247003714,
+              "p50_ms": 0.3161920000138707,
+              "p95_ms": 0.8837110000285975,
+              "p99_ms": 6.393554000055701
+            },
+            "processing_batch": {
+              "count": 91,
+              "window_count": 91,
+              "total_ms": 2543.335844999092,
+              "p50_ms": 18.862957999999708,
+              "p95_ms": 65.42886899990208,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 248.52699999999993,
+              "p50_ms": 0.158,
+              "p95_ms": 0.406,
+              "p99_ms": 0.5670000000000001
+            },
+            "websocket_send": {
+              "count": 1278,
+              "window_count": 1278,
+              "total_ms": 145.30487499973788,
+              "p50_ms": 0.09258900001896109,
+              "p95_ms": 0.215017999948941,
+              "p99_ms": 0.3188890000274114
+            },
+            "offset_commit": {
+              "count": 91,
+              "window_count": 91,
+              "total_ms": 103.42770400029622,
+              "p50_ms": 1.0011350000240782,
+              "p95_ms": 1.7411100000117585,
+              "p99_ms": 7.050278000065191
+            },
+            "database": {
+              "count": 34,
+              "window_count": 34,
+              "total_ms": 212.37631600024542,
+              "p50_ms": 5.459616000052847,
+              "p95_ms": 10.41795399999046,
+              "p99_ms": 11.060040000074878
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 1278,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 4.028803956000047,
+          "processed": 1634,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 1656,
+          "pricing_received": 49,
+          "completed": 1634,
+          "inventory_completed": 1585,
+          "rates": {
+            "kafka_events_per_second": 414.5411855321945,
+            "processed_events_per_second": 402.59762196343985,
+            "pricing_events_per_second": 7.962375712503136,
+            "websocket_messages_per_second": 402.59762196343985,
+            "broker_produced_per_second": 500.6343729236347
+          },
+          "consumer_lag": 311,
+          "lag_by_topic": {
+            "inventory-events": 304,
+            "pricing-events": 7
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 34,
+            "inventory-events:0": 24,
+            "inventory-events:3": 74,
+            "inventory-events:2": 56,
+            "inventory-events:5": 77,
+            "inventory-events:4": 39,
+            "pricing-events:2": 0,
+            "pricing-events:3": 0,
+            "pricing-events:4": 0,
+            "pricing-events:5": 0,
+            "pricing-events:0": 4,
+            "pricing-events:1": 3
+          },
+          "sampled_at": "2026-10-03T12:43:01.394536+00:00",
+          "process_cpu_percent": 55.639125720437534,
+          "process_rss_bytes": 83075072,
+          "process_peak_rss_bytes": 83075072,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 85,
+              "window_count": 85,
+              "total_ms": 1953.3945390003282,
+              "p50_ms": 20.466477000013583,
+              "p95_ms": 45.25283399993896,
+              "p99_ms": 61.4068639999914
+            },
+            "database_amortized": {
+              "count": 85,
+              "window_count": 85,
+              "total_ms": 232.49624118825523,
+              "p50_ms": 1.3648351333333468,
+              "p95_ms": 8.57293399997161,
+              "p99_ms": 26.06199000001652
+            },
+            "pricing_publish_batch": {
+              "count": 85,
+              "window_count": 85,
+              "total_ms": 453.19355900016944,
+              "p50_ms": 3.5829189999958544,
+              "p95_ms": 12.48193000003539,
+              "p99_ms": 27.870238999980756
+            },
+            "consumer_queue_wait": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 308521.1339999996,
+              "p50_ms": 173.491,
+              "p95_ms": 415.685,
+              "p99_ms": 446.835
+            },
+            "producer_to_consumer": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 600808.0039999994,
+              "p50_ms": 383.233,
+              "p95_ms": 573.3249999999999,
+              "p99_ms": 701.928
+            },
+            "redis": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 574.9752570002329,
+              "p50_ms": 0.2704759999687667,
+              "p95_ms": 0.7351370001060786,
+              "p99_ms": 1.1469060000308673
+            },
+            "websocket_enqueue": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 9.624603999213832,
+              "p50_ms": 0.004396000008455303,
+              "p95_ms": 0.012841999932788895,
+              "p99_ms": 0.017889999980980065
+            },
+            "processing": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 1060.563666003759,
+              "p50_ms": 0.33534499993947975,
+              "p95_ms": 1.164549000009174,
+              "p99_ms": 7.865490000085629
+            },
+            "processing_batch": {
+              "count": 117,
+              "window_count": 117,
+              "total_ms": 3511.234574999321,
+              "p50_ms": 23.608312000078513,
+              "p95_ms": 71.67362299992419,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 357.1139999999998,
+              "p50_ms": 0.164,
+              "p95_ms": 0.495,
+              "p99_ms": 0.7240000000000001
+            },
+            "websocket_send": {
+              "count": 1634,
+              "window_count": 1634,
+              "total_ms": 208.91467400144847,
+              "p50_ms": 0.09798800010685227,
+              "p95_ms": 0.2639099999441896,
+              "p99_ms": 0.40396499991857127
+            },
+            "offset_commit": {
+              "count": 117,
+              "window_count": 117,
+              "total_ms": 139.08269900036885,
+              "p50_ms": 1.0321280000198385,
+              "p95_ms": 1.8361380000442296,
+              "p99_ms": 2.6142799999888666
+            },
+            "database": {
+              "count": 49,
+              "window_count": 49,
+              "total_ms": 346.46965900026316,
+              "p50_ms": 6.2399050000294665,
+              "p95_ms": 12.640078000003996,
+              "p99_ms": 24.491102000069986
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 1634,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 5.03374126999995,
+          "processed": 2184,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 2234,
+          "pricing_received": 71,
+          "completed": 2184,
+          "inventory_completed": 2113,
+          "rates": {
+            "kafka_events_per_second": 433.3502678150288,
+            "processed_events_per_second": 437.8332016200119,
+            "pricing_events_per_second": 20.9203577565876,
+            "websocket_messages_per_second": 437.8332016200119,
+            "broker_produced_per_second": 558.3743105984452
+          },
+          "consumer_lag": 499,
+          "lag_by_topic": {
+            "inventory-events": 474,
+            "pricing-events": 25
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 63,
+            "inventory-events:0": 53,
+            "inventory-events:3": 94,
+            "inventory-events:2": 127,
+            "inventory-events:5": 69,
+            "inventory-events:4": 68,
+            "pricing-events:2": 1,
+            "pricing-events:3": 3,
+            "pricing-events:4": 6,
+            "pricing-events:5": 7,
+            "pricing-events:0": 5,
+            "pricing-events:1": 3
+          },
+          "sampled_at": "2026-10-03T12:43:03.634678+00:00",
+          "process_cpu_percent": 67.32118825175498,
+          "process_rss_bytes": 84291584,
+          "process_peak_rss_bytes": 84291584,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 101,
+              "window_count": 101,
+              "total_ms": 2421.601910000504,
+              "p50_ms": 21.485957999971106,
+              "p95_ms": 47.558687999980975,
+              "p99_ms": 54.9258540000892
+            },
+            "database_amortized": {
+              "count": 101,
+              "window_count": 101,
+              "total_ms": 248.55339702135274,
+              "p50_ms": 1.160659717948548,
+              "p95_ms": 8.044949000009183,
+              "p99_ms": 11.6458769999781
+            },
+            "pricing_publish_batch": {
+              "count": 100,
+              "window_count": 100,
+              "total_ms": 561.7881240004863,
+              "p50_ms": 5.065381999997953,
+              "p95_ms": 12.428685000031692,
+              "p99_ms": 15.464674999975614
+            },
+            "consumer_queue_wait": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 436272.2640000004,
+              "p50_ms": 181.301,
+              "p95_ms": 419.85499999999996,
+              "p99_ms": 447.958
+            },
+            "producer_to_consumer": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 913876.1839999988,
+              "p50_ms": 415.673,
+              "p95_ms": 785.972,
+              "p99_ms": 888.8439999999999
+            },
+            "redis": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 755.7846629994174,
+              "p50_ms": 0.2652409999654992,
+              "p95_ms": 0.7214629999907629,
+              "p99_ms": 1.1113770000292789
+            },
+            "websocket_enqueue": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 12.786441998969167,
+              "p50_ms": 0.004358999944997777,
+              "p95_ms": 0.01277999990634271,
+              "p99_ms": 0.01812400000744674
+            },
+            "processing": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 1451.783230003457,
+              "p50_ms": 0.32914100006564695,
+              "p95_ms": 1.1261429999649408,
+              "p99_ms": 8.320441000023493
+            },
+            "processing_batch": {
+              "count": 142,
+              "window_count": 142,
+              "total_ms": 4465.737086999411,
+              "p50_ms": 25.418059999992693,
+              "p95_ms": 71.67362299992419,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 471.5389999999989,
+              "p50_ms": 0.164,
+              "p95_ms": 0.475,
+              "p99_ms": 0.723
+            },
+            "websocket_send": {
+              "count": 2184,
+              "window_count": 2184,
+              "total_ms": 274.36017100217214,
+              "p50_ms": 0.09490700006153929,
+              "p95_ms": 0.2587800000810603,
+              "p99_ms": 0.39723000008962117
+            },
+            "offset_commit": {
+              "count": 142,
+              "window_count": 142,
+              "total_ms": 169.91424500020003,
+              "p50_ms": 1.0321280000198385,
+              "p95_ms": 1.8511959999614191,
+              "p99_ms": 2.817176999997173
+            },
+            "database": {
+              "count": 71,
+              "window_count": 71,
+              "total_ms": 513.9190810006085,
+              "p50_ms": 6.838094000045203,
+              "p95_ms": 12.717559000066103,
+              "p99_ms": 24.491102000069986
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 2184,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 6.03791727700002,
+          "processed": 2732,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 2766,
+          "pricing_received": 129,
+          "completed": 2732,
+          "inventory_completed": 2603,
+          "rates": {
+            "kafka_events_per_second": 433.3502678150288,
+            "processed_events_per_second": 437.8332016200119,
+            "pricing_events_per_second": 20.9203577565876,
+            "websocket_messages_per_second": 437.8332016200119,
+            "broker_produced_per_second": 558.3743105984452
+          },
+          "consumer_lag": 499,
+          "lag_by_topic": {
+            "inventory-events": 474,
+            "pricing-events": 25
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 63,
+            "inventory-events:0": 53,
+            "inventory-events:3": 94,
+            "inventory-events:2": 127,
+            "inventory-events:5": 69,
+            "inventory-events:4": 68,
+            "pricing-events:2": 1,
+            "pricing-events:3": 3,
+            "pricing-events:4": 6,
+            "pricing-events:5": 7,
+            "pricing-events:0": 5,
+            "pricing-events:1": 3
+          },
+          "sampled_at": "2026-10-03T12:43:03.634678+00:00",
+          "process_cpu_percent": 67.32118825175498,
+          "process_rss_bytes": 84291584,
+          "process_peak_rss_bytes": 84291584,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 119,
+              "window_count": 119,
+              "total_ms": 2771.0709690005615,
+              "p50_ms": 20.80395000007229,
+              "p95_ms": 47.558687999980975,
+              "p99_ms": 54.9258540000892
+            },
+            "database_amortized": {
+              "count": 119,
+              "window_count": 119,
+              "total_ms": 263.75023912439696,
+              "p50_ms": 1.0956938999925114,
+              "p95_ms": 8.044949000009183,
+              "p99_ms": 11.6458769999781
+            },
+            "pricing_publish_batch": {
+              "count": 118,
+              "window_count": 118,
+              "total_ms": 683.7531610004817,
+              "p50_ms": 5.434755000010227,
+              "p95_ms": 12.428685000031692,
+              "p99_ms": 15.464674999975614
+            },
+            "consumer_queue_wait": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 548920.382,
+              "p50_ms": 181.361,
+              "p95_ms": 414.5,
+              "p99_ms": 447.39
+            },
+            "producer_to_consumer": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 1257624.8090000006,
+              "p50_ms": 449.189,
+              "p95_ms": 854.201,
+              "p99_ms": 1128.2669999999998
+            },
+            "redis": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 901.003312998796,
+              "p50_ms": 0.2576749999434469,
+              "p95_ms": 0.6778280001071835,
+              "p99_ms": 1.0297160000618533
+            },
+            "websocket_enqueue": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 15.289726000332848,
+              "p50_ms": 0.00430800002959586,
+              "p95_ms": 0.011886000038430211,
+              "p99_ms": 0.017648000039116596
+            },
+            "processing": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 1945.4727850032896,
+              "p50_ms": 0.32000300006984617,
+              "p95_ms": 2.1139309999398392,
+              "p99_ms": 8.203342000001612
+            },
+            "processing_batch": {
+              "count": 174,
+              "window_count": 174,
+              "total_ms": 5446.749226999486,
+              "p50_ms": 27.362046999996892,
+              "p95_ms": 69.78525399995306,
+              "p99_ms": 101.95919199998116
+            },
+            "websocket_queue": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 572.9579999999977,
+              "p50_ms": 0.161,
+              "p95_ms": 0.467,
+              "p99_ms": 0.6890000000000001
+            },
+            "websocket_send": {
+              "count": 2732,
+              "window_count": 2732,
+              "total_ms": 329.9570090009638,
+              "p50_ms": 0.09311500002695539,
+              "p95_ms": 0.24824999991324148,
+              "p99_ms": 0.3849779999427483
+            },
+            "offset_commit": {
+              "count": 174,
+              "window_count": 174,
+              "total_ms": 199.75520000036795,
+              "p50_ms": 1.0011350000240782,
+              "p95_ms": 1.8361380000442296,
+              "p99_ms": 2.817176999997173
+            },
+            "database": {
+              "count": 129,
+              "window_count": 129,
+              "total_ms": 825.5805270008523,
+              "p50_ms": 5.570094000063364,
+              "p95_ms": 10.41795399999046,
+              "p99_ms": 13.230554000074335
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 2732,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 7.0431622329999755,
+          "processed": 3175,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 3178,
+          "pricing_received": 186,
+          "completed": 3175,
+          "inventory_completed": 2992,
+          "rates": {
+            "kafka_events_per_second": 588.4919132051023,
+            "processed_events_per_second": 588.045409477329,
+            "pricing_events_per_second": 35.72029822185749,
+            "websocket_messages_per_second": 588.045409477329,
+            "broker_produced_per_second": 323.2686989078103
+          },
+          "consumer_lag": 132,
+          "lag_by_topic": {
+            "inventory-events": 84,
+            "pricing-events": 48
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 7,
+            "inventory-events:0": 5,
+            "inventory-events:3": 16,
+            "inventory-events:2": 10,
+            "inventory-events:5": 40,
+            "inventory-events:4": 6,
+            "pricing-events:2": 10,
+            "pricing-events:3": 8,
+            "pricing-events:4": 9,
+            "pricing-events:5": 3,
+            "pricing-events:0": 7,
+            "pricing-events:1": 11
+          },
+          "sampled_at": "2026-10-03T12:43:05.643792+00:00",
+          "process_cpu_percent": 66.6827063010109,
+          "process_rss_bytes": 85315584,
+          "process_peak_rss_bytes": 85315584,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 3075.122246000774,
+              "p50_ms": 20.80395000007229,
+              "p95_ms": 45.25283399993896,
+              "p99_ms": 54.9258540000892
+            },
+            "database_amortized": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 279.9297229125714,
+              "p50_ms": 1.058642400005283,
+              "p95_ms": 6.961152000030779,
+              "p99_ms": 11.6458769999781
+            },
+            "pricing_publish_batch": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 789.9410960008026,
+              "p50_ms": 5.5618349999804195,
+              "p95_ms": 12.428685000031692,
+              "p99_ms": 15.464674999975614
+            },
+            "consumer_queue_wait": {
+              "count": 3176,
+              "window_count": 3176,
+              "total_ms": 636253.7269999994,
+              "p50_ms": 184.188,
+              "p95_ms": 401.725,
+              "p99_ms": 446.289
+            },
+            "producer_to_consumer": {
+              "count": 3176,
+              "window_count": 3176,
+              "total_ms": 1522299.8510000017,
+              "p50_ms": 470.817,
+              "p95_ms": 836.129,
+              "p99_ms": 1104.855
+            },
+            "redis": {
+              "count": 3175,
+              "window_count": 3175,
+              "total_ms": 1037.5314929976867,
+              "p50_ms": 0.25786200001221005,
+              "p95_ms": 0.6584710000652194,
+              "p99_ms": 1.0297160000618533
+            },
+            "websocket_enqueue": {
+              "count": 3175,
+              "window_count": 3175,
+              "total_ms": 17.571563000046808,
+              "p50_ms": 0.004301999979361426,
+              "p95_ms": 0.01148800004102668,
+              "p99_ms": 0.017683999999462685
+            },
+            "processing": {
+              "count": 3175,
+              "window_count": 3175,
+              "total_ms": 2489.7016720037755,
+              "p50_ms": 0.32039100005931687,
+              "p95_ms": 5.217638999965857,
+              "p99_ms": 8.320441000023493
+            },
+            "processing_batch": {
+              "count": 204,
+              "window_count": 204,
+              "total_ms": 6413.643631999321,
+              "p50_ms": 27.362046999996892,
+              "p95_ms": 67.78190300008191,
+              "p99_ms": 90.8663019999949
+            },
+            "websocket_queue": {
+              "count": 3175,
+              "window_count": 3175,
+              "total_ms": 667.7289999999981,
+              "p50_ms": 0.161,
+              "p95_ms": 0.47,
+              "p99_ms": 0.709
+            },
+            "websocket_send": {
+              "count": 3175,
+              "window_count": 3175,
+              "total_ms": 379.89794500219887,
+              "p50_ms": 0.09298600002694002,
+              "p95_ms": 0.23947399995449814,
+              "p99_ms": 0.3803070000003572
+            },
+            "offset_commit": {
+              "count": 204,
+              "window_count": 204,
+              "total_ms": 239.6461450003926,
+              "p50_ms": 1.025432999995246,
+              "p95_ms": 1.8511959999614191,
+              "p99_ms": 3.2460779999610168
+            },
+            "database": {
+              "count": 183,
+              "window_count": 183,
+              "total_ms": 1197.8876500010074,
+              "p50_ms": 5.747540000015761,
+              "p95_ms": 10.726537999971697,
+              "p99_ms": 24.491102000069986
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 3175,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        },
+        {
+          "elapsed_seconds": 8.048687774999962,
+          "processed": 3182,
+          "failed": 0,
+          "duplicate": 0,
+          "stale": 0,
+          "dlq": 0,
+          "kafka_received": 3182,
+          "pricing_received": 190,
+          "completed": 3182,
+          "inventory_completed": 2992,
+          "rates": {
+            "kafka_events_per_second": 588.4919132051023,
+            "processed_events_per_second": 588.045409477329,
+            "pricing_events_per_second": 35.72029822185749,
+            "websocket_messages_per_second": 588.045409477329,
+            "broker_produced_per_second": 323.2686989078103
+          },
+          "consumer_lag": 132,
+          "lag_by_topic": {
+            "inventory-events": 84,
+            "pricing-events": 48
+          },
+          "lag_by_partition": {
+            "inventory-events:1": 7,
+            "inventory-events:0": 5,
+            "inventory-events:3": 16,
+            "inventory-events:2": 10,
+            "inventory-events:5": 40,
+            "inventory-events:4": 6,
+            "pricing-events:2": 10,
+            "pricing-events:3": 8,
+            "pricing-events:4": 9,
+            "pricing-events:5": 3,
+            "pricing-events:0": 7,
+            "pricing-events:1": 11
+          },
+          "sampled_at": "2026-10-03T12:43:05.643792+00:00",
+          "process_cpu_percent": 66.6827063010109,
+          "process_rss_bytes": 85315584,
+          "process_peak_rss_bytes": 85315584,
+          "stage_latencies": {
+            "database_batch": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 3075.122246000774,
+              "p50_ms": 20.80395000007229,
+              "p95_ms": 45.25283399993896,
+              "p99_ms": 54.9258540000892
+            },
+            "database_amortized": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 279.9297229125714,
+              "p50_ms": 1.058642400005283,
+              "p95_ms": 6.961152000030779,
+              "p99_ms": 11.6458769999781
+            },
+            "pricing_publish_batch": {
+              "count": 133,
+              "window_count": 133,
+              "total_ms": 789.9410960008026,
+              "p50_ms": 5.5618349999804195,
+              "p95_ms": 12.428685000031692,
+              "p99_ms": 15.464674999975614
+            },
+            "consumer_queue_wait": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 636390.8159999994,
+              "p50_ms": 183.895,
+              "p95_ms": 401.426,
+              "p99_ms": 446.289
+            },
+            "producer_to_consumer": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 1523740.4380000017,
+              "p50_ms": 470.78,
+              "p95_ms": 832.21,
+              "p99_ms": 1104.855
+            },
+            "redis": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 1040.2837249979484,
+              "p50_ms": 0.2580939999461407,
+              "p95_ms": 0.6580470000017158,
+              "p99_ms": 1.0297160000618533
+            },
+            "websocket_enqueue": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 17.62737899991862,
+              "p50_ms": 0.004304999947635224,
+              "p95_ms": 0.01148800004102668,
+              "p99_ms": 0.017683999999462685
+            },
+            "processing": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 2539.4432550036754,
+              "p50_ms": 0.3206080000381917,
+              "p95_ms": 5.29350700003306,
+              "p99_ms": 8.36233200004699
+            },
+            "processing_batch": {
+              "count": 209,
+              "window_count": 209,
+              "total_ms": 6484.29511999916,
+              "p50_ms": 26.448490999996466,
+              "p95_ms": 67.78190300008191,
+              "p99_ms": 90.8663019999949
+            },
+            "websocket_queue": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 669.5489999999982,
+              "p50_ms": 0.161,
+              "p95_ms": 0.47,
+              "p99_ms": 0.714
+            },
+            "websocket_send": {
+              "count": 3182,
+              "window_count": 3182,
+              "total_ms": 381.2249550020397,
+              "p50_ms": 0.09303499996349274,
+              "p95_ms": 0.23947399995449814,
+              "p99_ms": 0.3803070000003572
+            },
+            "offset_commit": {
+              "count": 209,
+              "window_count": 209,
+              "total_ms": 245.5035340003633,
+              "p50_ms": 1.0321280000198385,
+              "p95_ms": 1.8511959999614191,
+              "p99_ms": 3.2460779999610168
+            },
+            "database": {
+              "count": 190,
+              "window_count": 190,
+              "total_ms": 1243.9156680011365,
+              "p50_ms": 5.768439000007675,
+              "p95_ms": 10.726537999971697,
+              "p99_ms": 24.491102000069986
+            }
+          },
+          "active_websocket_clients": 1,
+          "websocket_messages": 3182,
+          "slow_client_disconnects": 0,
+          "redis_cache_reads": 0,
+          "redis_cache_hits": 0,
+          "redis_cache_hit_rate": null,
+          "inventory_circuit": {
+            "state": "CLOSED",
+            "failures": 0,
+            "transitions": [],
+            "retry_after_seconds": 0
+          },
+          "consumer_paused": false,
+          "consumer_instances": 1,
+          "consumer_batch_size": 50,
+          "consumer_batch_enabled": true,
+          "failed_socket_sends": 0
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,10 @@
 
 ## 1. Project Overview
 
+### Implementation status (October 2026)
+
+The shipped local design uses **one FastAPI process** for inventory, pricing, and WebSocket delivery; the service split drawn below is conceptual, not separate deployed microservices. PostgreSQL stores receipts and transactional pricing decisions; rule-based prices use an independent price revision. Optional ML has not been trained or implemented. Bounded transactional inventory batches, grouped offsets, configurable co-located consumer group members, stage percentile instrumentation, browser/load/sustained harnesses, and separate CI/integration/manual performance workflows are implemented; see `docs/performance.md` for measured local results and limitations rather than assuming configured simulator rates are sustained end-to-end throughput. The CI workflow must run on GitHub after publication before claiming a remote pass. `docs/architecture.md` describes the actual topology and production scaling plan.
+
 FlashFlow is a production-style real-time retail platform designed to remain responsive during extreme flash-sale traffic.
 
 The system simulates thousands of inventory and pricing events, processes them through an event-driven Kafka pipeline, broadcasts state changes to browsers over WebSockets, and renders updates efficiently using client-side micro-batching and atomic state subscriptions.
@@ -146,6 +150,7 @@ Measure:
 - pytest
 - Playwright
 - k6
+- Standard-library asyncio/WebSocket load probe (the implemented equivalent)
 - React Profiler
 - browser Performance APIs
 

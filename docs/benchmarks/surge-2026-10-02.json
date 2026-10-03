@@ -1,0 +1,152 @@
+{
+  "kind": "bounded-real-kafka-surge",
+  "requested_inventory_events_per_second": 500,
+  "burst_seconds": 6,
+  "before": {
+    "processed": 2932,
+    "failed": 11,
+    "duplicate": 3,
+    "stale": 1,
+    "dlq": 2,
+    "kafka_received": 2938,
+    "pricing_received": 252,
+    "rates": {
+      "kafka_events_per_second": 0,
+      "pricing_events_per_second": 0,
+      "websocket_messages_per_second": 0
+    },
+    "consumer_lag": 0,
+    "lag_by_topic": {
+      "inventory-events": 0,
+      "pricing-events": 0
+    },
+    "sampled_at": "2026-10-02T14:42:16.603951+05:30",
+    "process_cpu_percent": 5.23611901078799,
+    "process_peak_rss_bytes": 92409856,
+    "active_websocket_clients": 3,
+    "websocket_messages": 7522,
+    "slow_client_disconnects": 0,
+    "redis_cache_reads": 25,
+    "redis_cache_hits": 25,
+    "redis_cache_hit_rate": 1,
+    "inventory_circuit": {
+      "state": "CLOSED",
+      "failures": 0,
+      "transitions": [
+        {
+          "from": "CLOSED",
+          "to": "OPEN",
+          "at": "2026-10-02T14:39:10.640172+05:30"
+        },
+        {
+          "from": "OPEN",
+          "to": "HALF_OPEN",
+          "at": "2026-10-02T14:39:16.023775+05:30"
+        },
+        {
+          "from": "HALF_OPEN",
+          "to": "CLOSED",
+          "at": "2026-10-02T14:39:16.055081+05:30"
+        },
+        {
+          "from": "CLOSED",
+          "to": "OPEN",
+          "at": "2026-10-02T14:41:01.590946+05:30"
+        },
+        {
+          "from": "OPEN",
+          "to": "HALF_OPEN",
+          "at": "2026-10-02T14:41:07.440455+05:30"
+        },
+        {
+          "from": "HALF_OPEN",
+          "to": "CLOSED",
+          "at": "2026-10-02T14:41:07.472165+05:30"
+        }
+      ],
+      "retry_after_seconds": 0
+    },
+    "consumer_paused": false
+  },
+  "after": {
+    "processed": 6000,
+    "failed": 11,
+    "duplicate": 3,
+    "stale": 14,
+    "dlq": 2,
+    "kafka_received": 6019,
+    "pricing_received": 333,
+    "rates": {
+      "kafka_events_per_second": 0,
+      "pricing_events_per_second": 0,
+      "websocket_messages_per_second": 0
+    },
+    "consumer_lag": 0,
+    "lag_by_topic": {
+      "inventory-events": 0,
+      "pricing-events": 0
+    },
+    "sampled_at": "2026-10-02T14:44:04.048378+05:30",
+    "process_cpu_percent": 3.361781910002559,
+    "process_peak_rss_bytes": 93061120,
+    "active_websocket_clients": 2,
+    "websocket_messages": 17020,
+    "slow_client_disconnects": 0,
+    "redis_cache_reads": 25,
+    "redis_cache_hits": 25,
+    "redis_cache_hit_rate": 1,
+    "inventory_circuit": {
+      "state": "CLOSED",
+      "failures": 0,
+      "transitions": [
+        {
+          "from": "CLOSED",
+          "to": "OPEN",
+          "at": "2026-10-02T14:39:10.640172+05:30"
+        },
+        {
+          "from": "OPEN",
+          "to": "HALF_OPEN",
+          "at": "2026-10-02T14:39:16.023775+05:30"
+        },
+        {
+          "from": "HALF_OPEN",
+          "to": "CLOSED",
+          "at": "2026-10-02T14:39:16.055081+05:30"
+        },
+        {
+          "from": "CLOSED",
+          "to": "OPEN",
+          "at": "2026-10-02T14:41:01.590946+05:30"
+        },
+        {
+          "from": "OPEN",
+          "to": "HALF_OPEN",
+          "at": "2026-10-02T14:41:07.440455+05:30"
+        },
+        {
+          "from": "HALF_OPEN",
+          "to": "CLOSED",
+          "at": "2026-10-02T14:41:07.472165+05:30"
+        }
+      ],
+      "retry_after_seconds": 0
+    },
+    "consumer_paused": false
+  },
+  "inventory_records_received_delta": 3000,
+  "pricing_records_received_delta": 81,
+  "dlq_delta": 0,
+  "browser_sample": {
+    "received_events_per_second": 72.4,
+    "ui_flushes_per_second": 52.3,
+    "card_commits_per_second": 71.4,
+    "receipt_to_commit_ms": 5.7,
+    "fps": 60.3,
+    "event_to_ui_p50_ms": 13141,
+    "event_to_ui_p95_ms": 13616,
+    "consumed_kafka_records_per_second": 98.2,
+    "committed_lag": 1395
+  },
+  "notes": "One isolated six-second burst, normal simulator stopped until backlog drained; browser sample observed during drain, not a whole-run percentile; requested rate is not sustained throughput. Timestamps were serialized by PowerShell in local timezone."
+}

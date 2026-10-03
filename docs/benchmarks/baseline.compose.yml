@@ -1,0 +1,4 @@
+services:
+  api:
+    image: flashflow-baseline:timed
+    pull_policy: never

@@ -1,0 +1,501 @@
+{
+  "kind": "derived-local-performance-summary",
+  "date": "2026-10-03",
+  "environment": {
+    "os": "win32 10.0.26300",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "logical_cpus": 16
+  },
+  "baseline": {
+    "target_rate": 500,
+    "seconds": 6,
+    "actual_producer_rate": 498.11143104216836,
+    "produced": 2996,
+    "inventory_completed": null,
+    "inventory_rate_during_production": null,
+    "inventory_rate_including_drain": 96.3325377059274,
+    "maximum_sampled_lag": 2254,
+    "drain_seconds": 25.085884462999957,
+    "event_to_client_ms": {
+      "p50": 11262.621,
+      "p95": 23131.782000000003,
+      "p99": 23569.724000000002
+    },
+    "socket_messages": 3140,
+    "database_batch_p95_ms": null,
+    "database_individual_p95_ms": 10.670169000036367,
+    "redis_p95_ms": 0.6938080000509217,
+    "ws_enqueue_p95_ms": 0.012749000006806455,
+    "ws_send_p95_ms": 0.3113829999392692,
+    "errors": [],
+    "failed_attempts_delta": 0,
+    "dlq_delta": 0,
+    "mean_api_cpu_percent": 53.500992215813916,
+    "rss_range_mib": null
+  },
+  "batch_pilot": {
+    "target_rate": 500,
+    "seconds": 6,
+    "actual_producer_rate": 498.24001510557315,
+    "produced": 2992,
+    "inventory_completed": 2992,
+    "inventory_rate_during_production": null,
+    "inventory_rate_including_drain": 372.824384054493,
+    "maximum_sampled_lag": 499,
+    "drain_seconds": 2.020088256000008,
+    "event_to_client_ms": {
+      "p50": 677.685,
+      "p95": 1057.932,
+      "p99": 1255.314
+    },
+    "socket_messages": 3182,
+    "database_batch_p95_ms": 45.25283399993896,
+    "database_individual_p95_ms": 10.726537999971697,
+    "redis_p95_ms": 0.6580470000017158,
+    "ws_enqueue_p95_ms": 0.01148800004102668,
+    "ws_send_p95_ms": 0.23947399995449814,
+    "errors": [],
+    "failed_attempts_delta": 0,
+    "dlq_delta": 0,
+    "mean_api_cpu_percent": 44.49001105339836,
+    "rss_range_mib": [
+      75.3125,
+      81.36328125
+    ]
+  },
+  "consumer_counts": [
+    {
+      "target_rate": 500,
+      "seconds": 30,
+      "actual_producer_rate": 499.62291870539195,
+      "produced": 14997,
+      "inventory_completed": 14997,
+      "inventory_rate_during_production": null,
+      "inventory_rate_including_drain": 483.2515282125967,
+      "maximum_sampled_lag": 783,
+      "drain_seconds": 1.016890923000119,
+      "event_to_client_ms": {
+        "p50": 838.66,
+        "p95": 1624.43,
+        "p99": 1960.507
+      },
+      "socket_messages": 15380,
+      "database_batch_p95_ms": 48.671009999907255,
+      "database_individual_p95_ms": 12.433039999905304,
+      "redis_p95_ms": 0.8910490000744176,
+      "ws_enqueue_p95_ms": 0.015084000096976524,
+      "ws_send_p95_ms": 0.2123770000252989,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 65.1989667123848,
+      "rss_range_mib": [
+        79.25390625,
+        89.0390625
+      ]
+    },
+    {
+      "target_rate": 500,
+      "seconds": 30,
+      "actual_producer_rate": 499.6376438381082,
+      "produced": 14995,
+      "inventory_completed": 14995,
+      "inventory_rate_during_production": null,
+      "inventory_rate_including_drain": 483.14644125755603,
+      "maximum_sampled_lag": 356,
+      "drain_seconds": 1.0243888909999441,
+      "event_to_client_ms": {
+        "p50": 378.11400000000003,
+        "p95": 817.446,
+        "p99": 986.4490000000001
+      },
+      "socket_messages": 15268,
+      "database_batch_p95_ms": 51.165025000045716,
+      "database_individual_p95_ms": 16.21261500008586,
+      "redis_p95_ms": 1.2454530001377861,
+      "ws_enqueue_p95_ms": 0.01579600007062254,
+      "ws_send_p95_ms": 0.25203399991369224,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 72.39058934905302,
+      "rss_range_mib": [
+        79.6015625,
+        91.046875
+      ]
+    },
+    {
+      "target_rate": 500,
+      "seconds": 30,
+      "actual_producer_rate": 499.6160551718462,
+      "produced": 14998,
+      "inventory_completed": 14998,
+      "inventory_rate_during_production": null,
+      "inventory_rate_including_drain": 482.7886414890955,
+      "maximum_sampled_lag": 355,
+      "drain_seconds": 1.0463025670001116,
+      "event_to_client_ms": {
+        "p50": 406.189,
+        "p95": 777.058,
+        "p99": 880.027
+      },
+      "socket_messages": 15023,
+      "database_batch_p95_ms": 65.4180900000938,
+      "database_individual_p95_ms": 20.782530000133193,
+      "redis_p95_ms": 2.0362790000945097,
+      "ws_enqueue_p95_ms": 0.013635000186695834,
+      "ws_send_p95_ms": 0.1927009998325957,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 72.91087175480004,
+      "rss_range_mib": [
+        77.96484375,
+        90.578125
+      ]
+    }
+  ],
+  "corrected_matrix": [
+    {
+      "target_rate": 100,
+      "seconds": 60,
+      "actual_producer_rate": 99.95437133600488,
+      "produced": 5999,
+      "inventory_completed": 5999,
+      "inventory_rate_during_production": 99.88772398055497,
+      "inventory_rate_including_drain": 96.6788647488341,
+      "maximum_sampled_lag": 8,
+      "drain_seconds": 2.033405552000204,
+      "event_to_client_ms": {
+        "p50": 23.982,
+        "p95": 77.065,
+        "p99": 108.842
+      },
+      "socket_messages": 6442,
+      "database_batch_p95_ms": 21.785188000194466,
+      "database_individual_p95_ms": 18.138621999696625,
+      "redis_p95_ms": 1.6029990001698025,
+      "ws_enqueue_p95_ms": 0.018759999875328504,
+      "ws_send_p95_ms": 0.3254450002714293,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 72.0776733623954,
+      "rss_range_mib": [
+        77.82421875,
+        93.30859375
+      ]
+    },
+    {
+      "target_rate": 500,
+      "seconds": 60,
+      "actual_producer_rate": 499.8094533651307,
+      "produced": 29997,
+      "inventory_completed": 29997,
+      "inventory_rate_during_production": 496.04384558900244,
+      "inventory_rate_including_drain": 483.4620063995562,
+      "maximum_sampled_lag": 354,
+      "drain_seconds": 2.0293686359996173,
+      "event_to_client_ms": {
+        "p50": 382.78200000000004,
+        "p95": 743.9670000000001,
+        "p99": 852.876
+      },
+      "socket_messages": 30168,
+      "database_batch_p95_ms": 53.86784299980718,
+      "database_individual_p95_ms": 19.295993000014278,
+      "redis_p95_ms": 2.1031880000919045,
+      "ws_enqueue_p95_ms": 0.013367000065045431,
+      "ws_send_p95_ms": 0.19018600005438202,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 74.68746591635306,
+      "rss_range_mib": [
+        93.30859375,
+        101.04296875
+      ]
+    },
+    {
+      "target_rate": 1000,
+      "seconds": 60,
+      "actual_producer_rate": 999.6353606497928,
+      "produced": 59994,
+      "inventory_completed": 59994,
+      "inventory_rate_during_production": 823.7652531113962,
+      "inventory_rate_including_drain": 778.1783404616041,
+      "maximum_sampled_lag": 10756,
+      "drain_seconds": 17.079553846999715,
+      "event_to_client_ms": {
+        "p50": 5165.68,
+        "p95": 15311.631,
+        "p99": 17254.255
+      },
+      "socket_messages": 60491,
+      "database_batch_p95_ms": 88.09512800007724,
+      "database_individual_p95_ms": 28.2819459998791,
+      "redis_p95_ms": 2.600335999886738,
+      "ws_enqueue_p95_ms": 0.01377199987473432,
+      "ws_send_p95_ms": 0.17944199998964905,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 87.55993134498007,
+      "rss_range_mib": [
+        100.97265625,
+        106.8203125
+      ]
+    },
+    {
+      "target_rate": 2000,
+      "seconds": 60,
+      "actual_producer_rate": 1999.2397030299142,
+      "produced": 119992,
+      "inventory_completed": 119992,
+      "inventory_rate_during_production": 832.2223475451794,
+      "inventory_rate_including_drain": 814.513103831598,
+      "maximum_sampled_lag": 69529,
+      "drain_seconds": 87.29864198200039,
+      "event_to_client_ms": {
+        "p50": 49351.840000000004,
+        "p95": 79834.641,
+        "p99": 83855.284
+      },
+      "socket_messages": 120385,
+      "database_batch_p95_ms": 116.74671099990519,
+      "database_individual_p95_ms": 29.30996299983235,
+      "redis_p95_ms": 0.9011820002342574,
+      "ws_enqueue_p95_ms": 0.013830000170855783,
+      "ws_send_p95_ms": 0.1934839997375093,
+      "errors": [],
+      "failed_attempts_delta": 0,
+      "dlq_delta": 0,
+      "mean_api_cpu_percent": 90.0662861017068,
+      "rss_range_mib": [
+        102.546875,
+        113.58203125
+      ]
+    }
+  ],
+  "rendered_raw_matrix": [
+    {
+      "target_rate": 100,
+      "mean_fps": 59.90888888888889,
+      "last_raw_rolling_event_to_ui_ms": {
+        "p50": 93,
+        "p95": 870,
+        "p99": 902
+      },
+      "samples": 45,
+      "note": "Approximate production window using backend sampled_at (up to 2s sampling offset); uncalibrated clocks; rolling 512 rendered commits"
+    },
+    {
+      "target_rate": 500,
+      "mean_fps": 59.81016949152542,
+      "last_raw_rolling_event_to_ui_ms": {
+        "p50": 891,
+        "p95": 1438,
+        "p99": 1581
+      },
+      "samples": 59,
+      "note": "Approximate production window using backend sampled_at (up to 2s sampling offset); uncalibrated clocks; rolling 512 rendered commits"
+    },
+    {
+      "target_rate": 1000,
+      "mean_fps": 59.72586206896552,
+      "last_raw_rolling_event_to_ui_ms": {
+        "p50": 8983,
+        "p95": 14556,
+        "p99": 14627
+      },
+      "samples": 58,
+      "note": "Approximate production window using backend sampled_at (up to 2s sampling offset); uncalibrated clocks; rolling 512 rendered commits"
+    },
+    {
+      "target_rate": 2000,
+      "mean_fps": 59.561016949152545,
+      "last_raw_rolling_event_to_ui_ms": {
+        "p50": 33744,
+        "p95": 34920,
+        "p99": 34938
+      },
+      "samples": 59,
+      "note": "Approximate production window using backend sampled_at (up to 2s sampling offset); uncalibrated clocks; rolling 512 rendered commits"
+    }
+  ],
+  "soak": {
+    "target_rate": 500,
+    "seconds": 300,
+    "actual_producer_rate": 499.9609912864604,
+    "produced": 149994,
+    "inventory_completed": 149994,
+    "inventory_rate_during_production": 499.071025123324,
+    "inventory_rate_including_drain": 496.5986428242298,
+    "maximum_sampled_lag": 389,
+    "drain_seconds": 2.031304162000197,
+    "event_to_client_ms": {
+      "p50": 298.931,
+      "p95": 757.531,
+      "p99": 903.447
+    },
+    "socket_messages": 150578,
+    "database_batch_p95_ms": 67.19501099996705,
+    "database_individual_p95_ms": 18.628199999966455,
+    "redis_p95_ms": 2.167080999697646,
+    "ws_enqueue_p95_ms": 0.014923999970051227,
+    "ws_send_p95_ms": 0.19509699995978735,
+    "errors": [],
+    "failed_attempts_delta": 0,
+    "dlq_delta": 0,
+    "mean_api_cpu_percent": 81.23699687688385,
+    "rss_range_mib": [
+      78.25,
+      99.421875
+    ]
+  },
+  "aligned_pipeline": {
+    "target_rate": 500,
+    "seconds": 60,
+    "actual_producer_rate": 499.789223473641,
+    "produced": 29989,
+    "inventory_completed": 29989,
+    "inventory_rate_during_production": 498.7892783801595,
+    "inventory_rate_including_drain": 483.43359014558087,
+    "maximum_sampled_lag": 396,
+    "drain_seconds": 2.0300448800003323,
+    "event_to_client_ms": {
+      "p50": 368.17299999999994,
+      "p95": 790.2099999999999,
+      "p99": 957.5559999999999
+    },
+    "socket_messages": 30077,
+    "database_batch_p95_ms": 56.854688999919745,
+    "database_individual_p95_ms": 18.12019999988479,
+    "redis_p95_ms": 1.93282200007161,
+    "ws_enqueue_p95_ms": 0.008418000106757972,
+    "ws_send_p95_ms": 0.18458799968357198,
+    "errors": [],
+    "failed_attempts_delta": 0,
+    "dlq_delta": 0,
+    "mean_api_cpu_percent": 76.15490378016506,
+    "rss_range_mib": [
+      92.9609375,
+      95.1875
+    ]
+  },
+  "aligned_rendered": {
+    "last_clock_aligned_rolling_ms": {
+      "p50": 171.5,
+      "p95": 629.5,
+      "p99": 703.5
+    },
+    "mean_fps": 59.832499999999996,
+    "sample_count": 40,
+    "last_sample_at": "2026-10-03T13:23:45.967Z",
+    "last_offset_ms": -466.5,
+    "last_rtt_half_ms": 7.5,
+    "offset_range_ms": [
+      -772.5,
+      565.5
+    ],
+    "rtt_half_range_ms": [
+      7.5,
+      33.5
+    ],
+    "browser_queue_p95_ms": 8.2,
+    "flush_to_commit_p95_ms": 2.4,
+    "note": "Observer covers only part of the 60s producer case, ends before final drain; latest 512 rendered commits; approximate HTTP clock calibration, not whole-case percentile"
+  },
+  "frontend_modes": [
+    {
+      "mode": "NAIVE",
+      "actual_send_rate": 498.3333333333333,
+      "fps": null,
+      "mean_trial_p95_ms": null,
+      "renderer_cpu_percent": 99.40659667673509
+    },
+    {
+      "mode": "ATOMIC",
+      "actual_send_rate": 498.83333333333337,
+      "fps": 41.61666666666667,
+      "mean_trial_p95_ms": 63.5,
+      "renderer_cpu_percent": 86.32730357874071
+    },
+    {
+      "mode": "MEMOIZED",
+      "actual_send_rate": 499.41666666666663,
+      "fps": 47.575,
+      "mean_trial_p95_ms": 45.5,
+      "renderer_cpu_percent": 85.14615294837361
+    },
+    {
+      "mode": "BATCHED",
+      "actual_send_rate": 498.8333333333333,
+      "fps": 58.400000000000006,
+      "mean_trial_p95_ms": 31.5,
+      "renderer_cpu_percent": 64.80259754212987
+    }
+  ],
+  "load": [
+    {
+      "clients_requested": 1,
+      "successful_connections": 1,
+      "connection_errors": 0,
+      "http_success": 15,
+      "http_errors": 0,
+      "fanout_p95_ms": 1.356,
+      "slow_disconnects_delta": 0
+    },
+    {
+      "clients_requested": 10,
+      "successful_connections": 10,
+      "connection_errors": 0,
+      "http_success": 150,
+      "http_errors": 0,
+      "fanout_p95_ms": 3.1229999999999998,
+      "slow_disconnects_delta": 0
+    },
+    {
+      "clients_requested": 50,
+      "successful_connections": 50,
+      "connection_errors": 0,
+      "http_success": 750,
+      "http_errors": 0,
+      "fanout_p95_ms": 8.895,
+      "slow_disconnects_delta": 0
+    },
+    {
+      "clients_requested": 100,
+      "successful_connections": 100,
+      "connection_errors": 0,
+      "http_success": 1500,
+      "http_errors": 0,
+      "fanout_p95_ms": 12.647,
+      "slow_disconnects_delta": 0
+    }
+  ],
+  "tests": {
+    "backend": 31,
+    "frontend_unit": 10,
+    "browser": 6,
+    "total": 47,
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "baseline-serial-2026-10-03.json": "d148ba65dfe4e1bd20ae66d5c9749b6be35b26fb1609936738b3e62074ddd02b",
+    "batched-one-2026-10-03.json": "62e426913a6bbc7ffdf18c6a6465cfe7db612635d62431b06c347abfa45d9ee2",
+    "pipeline-corrected-2026-10-03.json": "1fae3e2b9413cc6e4885f62397f885a446b952d95b56e33606b4ccc435d8079a",
+    "soak-500-2026-10-03.json": "4209c626d776efc1cd8366c1a0ed609d24f8bc4842ac9caae6f5c0b3ebf78c1f",
+    "pipeline-aligned-browser-2026-10-03.json": "ca90641f5df347a6b98617aae654a2c3669d322343e45d2c683595e3813683d8",
+    "live-corrected-2026-10-03.json": "772c7bfed0ebcddaf81745fa1655d795f3333952c72b6193333c897c07a93392",
+    "live-aligned-2026-10-03.json": "6f642ffe22ff6265d1ea151975f3f61c423525d0e1cdedd8a61564f4c5066818",
+    "browser-1791034208117.json": "c4c98306c24bb9ecb9d9896616b341e6794e581007d07acfbc27645f73bc92d5",
+    "load-2026-10-03.json": "9f90edaaf527f03a2718fca2eb32f7994f2a480d5f2e88123a022c2bde9a1a8c",
+    "consumers-1-2026-10-03.json": "95cfc76a72fbabcf395cdacee654b20004e1b47a567efbce647500b6fc3113df",
+    "consumers-2-2026-10-03.json": "8737121d2c4a92ece3941c75c023506acb6e7d7f0bbb0807854030bcac5765fe",
+    "consumers-3-2026-10-03.json": "a5935796faa4b04db834db1b0523aa292e3f89aa8e42ca2034eea9e76b4253cb"
+  },
+  "notes": "Final successful checks; remote CI unverified. Raw windows/populations and invalid pilot annotations must accompany these derived values."
+}

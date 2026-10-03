@@ -1,6 +1,10 @@
 # FlashFlow
 
-FlashFlow streams simulated retail inventory and audited rule-based prices through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. Phases 1–5 are implemented.
+FlashFlow streams simulated retail inventory and audited rule-based prices through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. The local implementation includes observability, reproducible benchmarks/load probes, and CI configuration; it is not a production deployment.
+
+Current throughput work: [pipeline timing and correctness](docs/pipeline-timing.md), [performance report](docs/throughput-report.md).
+
+Engineering evidence and walkthroughs: [architecture and failure flows](docs/architecture.md), [measurement methodology and results](docs/performance.md), [demo and interview guide](docs/demo-and-interview.md). Raw measurements live in `docs/benchmarks/`.
 
 ## Start locally
 
@@ -16,9 +20,10 @@ Open:
 - Frontend: http://localhost:3000
 - API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
+- Metrics: http://localhost:8000/metrics
 - Seeded products: http://localhost:8000/products
 
-The API container runs Alembic migrations and idempotently seeds 500 products before starting. The simulator then publishes inventory events to `inventory-events`, keyed by `product_id` to preserve per-product partition ordering.
+The API container runs Alembic migrations and idempotently seeds 500 products before starting. The simulator then publishes inventory events to `inventory-events`, keyed by `product_id` to preserve per-product partition ordering. Both API and frontend have Compose health checks; `docker compose up -d --build --wait` provides a ready-stack startup. Processes use init/signal forwarding, bounded health dependency checks, and shutdown cleanup. Frontend dependencies install from the lockfile with `npm ci`.
 
 Inspect events:
 
@@ -62,7 +67,7 @@ docker compose exec api python tests/integration_phase2.py --restart-check
 
 The integration probe creates an isolated product, verifies two WebSocket clients, Redis, duplicate/stale handling, and DLQ publication. Wait for `/health` to return OK after restarting the API.
 
-## Phase 2 architecture
+## Backend event path
 
 ```text
 seeded catalog -> simulator -> Kafka inventory-events
@@ -79,7 +84,7 @@ invalid/exhausted events -> inventory-events-dlq
 
 PostgreSQL updates and event-ID receipts commit together under a product row lock. Duplicate events cannot double-apply, stale versions are ignored, and version gaps or invalid stock transitions are retried and dead-lettered. Payload snapshots are checked against computed transitions rather than trusted as inventory state.
 
-Kafka auto-commit is disabled. Each partition offset advances only after database/cache processing and broadcast enqueue, or acknowledged DLQ publication. A cache failure after a database commit is repaired on replay without applying the event again. Infrastructure connection/time-out failures retain the record for retry rather than dead-lettering valid updates. DLQ publication or offset-commit failures retry the same record. Delivery to browsers is best-effort; reconnecting clients fetch a durable catalog snapshot and ignore older versions.
+Kafka auto-commit is disabled. Offsets are grouped per contiguous partition batch and advance only after database/cache processing and broadcast enqueue, or acknowledged DLQ publication. A cache failure after a database commit is repaired on replay without applying the event again. Infrastructure connection/time-out failures retain the record for retry rather than dead-lettering valid updates. DLQ publication or offset-commit failures retry the same record. Delivery to browsers is best-effort; reconnecting clients fetch a durable catalog snapshot and ignore older versions.
 
 WebSockets use heartbeat messages and client `pong` replies. Each client has a bounded queue; slow clients disconnect and reconnect without blocking the consumer. `/metrics` exposes processed, failed-attempt, duplicate, stale, DLQ, and active-client counters. Counters reset when the API restarts. Structured JSON event-failure and connection logs are written to container output.
 
@@ -87,11 +92,11 @@ Additional configuration: `KAFKA_CONSUMER_GROUP`, `KAFKA_DLQ_TOPIC`, `CONSUMER_M
 
 ## Current limits
 
-Run one API worker and one simulator. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages retain the affected Kafka record and temporarily hold consumer progress until its cache/broadcast can be repaired. The event ledger is retained indefinitely for this portfolio scope.
+Run one API process and one simulator. `CONSUMER_INSTANCES` starts multiple co-located Kafka group members sharing that gateway. The consumer and connection manager share the API process; multiple gateways need brokered fanout later. The simulator waits for the previous Kafka backlog to drain before loading its starting catalog. A rejected version can require manual reconciliation and DLQ replay for that product. Redis outages retain the affected Kafka record and temporarily hold consumer progress until its cache/broadcast can be repaired. The event ledger is retained indefinitely for this portfolio scope.
 
-Application authentication, production TLS, and systematic load benchmarks remain later work. Development fault controls use token authentication, not a general application login. This Compose stack is for local development.
+Application authentication, production TLS, and sustained multi-host capacity tests remain later work. Development fault controls use token authentication, not a general application login. This Compose stack is for local development; the recorded local benchmarks/load probes do not prove production capacity.
 
-## Phase 3 frontend
+## Frontend rendering
 
 `apps/frontend/lib/live.ts` owns product validation, WebSocket lifecycle, Zustand state, version guards, and the frame buffer. `app/page.tsx` contains the product grid, per-product subscriptions, memoized cards, mode selector, and sampled engineering panel. `app/styles.css` provides the responsive dashboard without an additional UI dependency.
 
@@ -149,7 +154,7 @@ docker compose start simulator
 
 Validation on the development machine: five frontend unit tests, three browser tests with the live stack enabled, ten backend tests, TypeScript checking, and a production build passed. A 2,000-message synthetic burst produced five updated-card commits in one run; this varies with scheduling. During a bounded 500-events/s producer run/backlog drain, one browser sample observed 92 received updates/s, 60 flushes/s, approximately 6 ms receipt-to-commit latency and 60 FPS. The configured producer rate is **not** measured end-to-end throughput. These are illustrative local samples, not controlled benchmark claims.
 
-The client currently renders the full catalog and expects the existing API on port 8000; virtualization and configurable production WebSocket routing should be added when deployment or catalog size requires them.
+The client currently renders the full catalog and expects the existing API on port 8000; `NEXT_PUBLIC_WEBSOCKET_URL` can override routing at build time. Virtualization remains an option for larger catalogs.
 
 ## Resilience and development lab
 
@@ -243,4 +248,39 @@ The isolated live probe verifies a 5% increase, audit persistence, Kafka-to-WebS
 
 Pricing verification on the local stack passed: 22 backend tests, seven frontend unit tests, six browser tests with live-stack/development controls enabled, TypeScript checking, and a production frontend build. The pricing, inventory, and resilience live probes passed. These are functional checks, not controlled throughput or financial-impact measurements.
 
-This is a transparent heuristic, not trained ML or a profit optimizer. No model accuracy, revenue uplift, or pricing throughput is claimed. Windows reset on the next inventory event and displayed demand does not decay without events. Audit rows are retained indefinitely; production volume needs retention/archival. Single-worker/fanout and Kafka polling limits above still apply. The next step is Phase 6's final documentation, controlled benchmarking, and demo polish, not an assumed production rollout.
+This is a transparent heuristic, not trained ML or a profit optimizer. No model accuracy, revenue uplift, or pricing throughput is claimed. Windows reset on the next inventory event and displayed demand does not decay without events. Audit rows are retained indefinitely; production volume needs retention/archival. Single-worker/fanout and Kafka polling limits above still apply. The observability/benchmarking work below records local evidence, not an assumed production rollout.
+
+## Observability, CI, and measured checks
+
+The engineering view now combines consumed Kafka and pricing record rates, committed lag, processed/duplicate/failed-attempt/DLQ counters, active clients, successful fanout sends/s, fallback-cache hits, circuit state, UI flushes, merged events, card commits, FPS, and rolling event-to-UI P50/P95/P99, backend stage P50/P95/P99 and per-partition lag. Missing samples show N/A. Counts reset with the API process; the browser has its own sample window. Read [metric definitions](docs/architecture.md#metrics-semantics) before interpreting them.
+
+`npm run benchmark` (from `apps/frontend`) compares all four modes at 50/500/2,000 synthetic events/s and saves new JSON files under `docs/benchmarks`. `docker compose exec -T api python tests/load_probe.py --clients 1 10 100 --seconds 10` tests real WebSocket/API clients. These are separate experiments: browser fixtures bypass Kafka, while real load receivers do not render React.
+
+In two six-second local browser trials at the 500/s target, BATCHED averaged about 60 FPS, 34 UI flushes/s, and a mean trial P95 of 25.5 ms, with about 499 actual sends/s and 475 sampled receipts/s. A separate eight-second 100-client local probe connected all clients, completed 400 HTTP responses without errors, and observed 11.45 ms fanout P95. High-rate immediate-mode samples became unavailable; the report records this explicitly. See [full results and caveats](docs/performance.md), not just these short-run summaries.
+
+Normal CI runs backend tests/Ruff fatal-error lint and frontend tests/TypeScript/build checks. The separate manual integration workflow runs Docker, Kafka/database/cache/restart/recovery probes and Playwright. A separate manual performance workflow runs pipeline, frontend or load benchmarks. This workflow is not yet a remotely verified pass until the new changes are pushed and run on GitHub.
+
+Historical October 2 local checks passed: 24 backend + eight frontend unit + six browser tests (38), three live integration probes, lint/type checks, Docker builds, and healthy startup. An isolated six-second real burst delivered 3,000 inventory records and 81 pricing records with no additional DLQ records and eventual zero lag. A captured drain sample had 60.3 FPS but **13.6 seconds event-to-UI P95**: rendering stayed responsive while the backend caught up. This explicitly does not establish sustained 500-events/s processing. The October 3 throughput report below contains the current 47-test validation and sustained measurements.
+
+## Throughput profiling and repeatable runs
+
+The sequential baseline spent most critical-path time in per-record PostgreSQL work. Inventory now uses bounded atomic transaction batches, preloaded row/receipt queries, one pending-price query per batch and grouped manual offsets. Every pricing audit remains durable in the inventory transaction. Redis revision checks prevent cross-topic cache rollback. Real Kafka group members can scale within the single API process; multiple gateway processes still require shared fanout.
+
+Important controls in `.env.example`: `CONSUMER_INSTANCES`, `CONSUMER_BATCH_SIZE`, `CONSUMER_BATCH_ENABLED`, `CONSUMER_POLL_MS`, `DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`, `WEBSOCKET_QUEUE_SIZE`, `WEBSOCKET_SEND_TIMEOUT_SECONDS`, `SHUTDOWN_TIMEOUT_SECONDS`, `LOGGING_LEVEL`. Defaults remain one group member and batches of at most 50 records per partition. Three members were used for the sustained matrix. Do not increase existing topic partitions while traffic is running.
+
+```powershell
+docker compose stop simulator
+$env:CONSUMER_INSTANCES="3"
+docker compose up -d --wait api frontend
+# Run from the repository root; preserve new raw outputs under docs/benchmarks.
+docker compose exec -T api python tests/pipeline_benchmark.py --rates 100 500 1000 2000 --seconds 120 --label local-matrix
+# Five-minute stability check:
+docker compose exec -T api python tests/pipeline_benchmark.py --rates 500 --seconds 300 --label local-soak
+# Batch correctness probe:
+docker compose exec -T api python tests/integration_pipeline.py
+# Real client scaling under normal simulator traffic:
+docker compose start simulator
+docker compose exec -T api python tests/load_probe.py --clients 1 10 50 100 --seconds 30
+```
+
+Run `npm run benchmark:live` from `apps/frontend` concurrently with a pipeline case to sample actual rendered latency/FPS. `LIVE_BENCH_SECONDS` and `LIVE_BENCH_OUTPUT` control its duration/output; new files are created without overwrite. Socket receiver percentiles and rolling rendered percentiles are different measurements. All stage definitions, clock limitations, measured capacity boundaries, before/after evidence and interview material are in the linked report. The benchmark generator is colocated with the API; local results are not production capacity guarantees.
