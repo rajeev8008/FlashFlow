@@ -47,7 +47,7 @@ async def test_cache_broadcast_retry_and_dlq():
     record = SimpleNamespace(key=str(p.product_id).encode(), value=event(p).model_dump_json().encode(), topic="test", partition=0, offset=3)
     with patch("flashflow.stream.process_event", AsyncMock(return_value=(p, "duplicate"))):
         await worker.handle(record)
-    worker.redis.set.assert_awaited_once()
+    worker.redis.eval.assert_awaited_once()
     assert (await first.get()) == (await second.get())
     assert worker.counters["duplicate"] == 1
     record.value = b"invalid"
@@ -76,30 +76,39 @@ async def test_retry_after_database_commit_repairs_cache():
     from collections import Counter
     worker.counters = Counter()
     worker.redis = AsyncMock()
-    worker.redis.set.side_effect = [ConnectionError("redis unavailable"), None]
+    worker.redis.eval.side_effect = [ConnectionError("redis unavailable"), None]
     worker.producer = AsyncMock()
     p = product()
     record = SimpleNamespace(key=str(p.product_id).encode(), value=event(p).model_dump_json().encode(), topic="test", partition=0, offset=3)
     with patch("flashflow.stream.process_event", AsyncMock(side_effect=[(p, "processed"), (p, "duplicate")])), patch("flashflow.stream.asyncio.sleep", AsyncMock()):
         await worker.handle(record)
-    assert worker.redis.set.await_count == 2
+    assert worker.redis.eval.await_count == 2
     assert worker.counters["duplicate"] == 1
     worker.producer.send_and_wait.assert_not_awaited()
 
 
 @pytest.mark.asyncio
 async def test_failed_dlq_does_not_commit_offset():
+    from collections import Counter
     from aiokafka import TopicPartition
     worker = InventoryConsumer.__new__(InventoryConsumer)
+    worker.counters = Counter()
     record = SimpleNamespace(topic="inventory-events", partition=2, offset=7)
     class FakeConsumer:
         start = AsyncMock()
         stop = AsyncMock()
         commit = AsyncMock()
-        def __aiter__(self):
-            async def records():
-                yield record
-            return records()
+        calls = 0
+        def assignment(self):
+            return {TopicPartition(record.topic, record.partition)}
+        async def getmany(self, **kwargs):
+            self.calls += 1
+            if self.calls == 1:
+                return {TopicPartition(record.topic, record.partition): [record]}
+            worker.stopping.set()
+            return {}
+    import asyncio
+    worker.stopping, worker.faults = asyncio.Event(), None
     worker.consumer = FakeConsumer()
     worker.producer = AsyncMock()
     worker.redis = AsyncMock()
@@ -112,7 +121,9 @@ async def test_failed_dlq_does_not_commit_offset():
         calls += 1
         if calls == 1:
             await failed()
-    worker.handle = handle
+    async def handle_batch(records, received_at):
+        await handle(records[0])
+    worker.handle_batch = handle_batch
     with patch("flashflow.stream.asyncio.sleep", AsyncMock()):
         await worker.run()
     assert calls == 2
@@ -134,4 +145,4 @@ async def test_dependency_outage_retains_valid_record_instead_of_dlq():
         worker.producer.send_and_wait.assert_not_awaited()
         worker.faults.redis_unavailable = False
         await worker.handle(record)
-        worker.redis.set.assert_awaited_once()
+        worker.redis.eval.assert_awaited_once()

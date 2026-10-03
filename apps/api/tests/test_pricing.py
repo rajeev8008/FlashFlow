@@ -80,4 +80,4 @@ async def test_pricing_publication_failure_retains_source_for_replay():
         with pytest.raises(KafkaError):
             await worker.handle(record)
         worker.producer.send_and_wait.assert_not_awaited()
-        worker.redis.set.assert_not_awaited()
+        worker.redis.eval.assert_not_awaited()

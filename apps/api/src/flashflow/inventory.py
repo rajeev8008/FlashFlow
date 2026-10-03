@@ -70,3 +70,40 @@ async def process_event(event: EventEnvelope) -> tuple[Product, Literal["process
             updated = Product.model_validate(row)
         session.add(ProcessedEvent(event_id=str(event.event_id), product_id=str(event.product_id), outcome=outcome, processed_at=datetime.now(timezone.utc)))
     return updated, outcome
+
+
+async def process_batch(events: list[EventEnvelope]):
+    """One atomic transaction, sorted row locks, unchanged event transitions/audits.
+
+    Invalid batches roll back in full; the caller isolates bad records using the
+    single-record handler. No cache or socket work happens before commit.
+    """
+    ids = sorted({str(event.product_id) for event in events})
+    async with Session() as session, session.begin():
+        rows = (await session.scalars(select(ProductRow).where(ProductRow.product_id.in_(ids))
+                                     .order_by(ProductRow.product_id).with_for_update())).all()
+        products = {row.product_id: row for row in rows}
+        receipts = set((await session.scalars(select(ProcessedEvent.event_id).where(
+            ProcessedEvent.event_id.in_([str(event.event_id) for event in events])))).all())
+        results = []
+        for event in events:
+            row = products.get(str(event.product_id))
+            if row is None:
+                raise ValueError("unknown product")
+            product = Product.model_validate(row)
+            if str(event.event_id) in receipts:
+                results.append((product, "duplicate"))
+                continue
+            updated = transition(product, event)
+            outcome = "stale" if updated.version == product.version else "processed"
+            if outcome == "processed":
+                for field, value in updated.model_dump(mode="python").items():
+                    if field not in ("product_id", "pricing_source"):
+                        setattr(row, field, value)
+                record_decision(session, row, event)
+                updated = Product.model_validate(row)
+            session.add(ProcessedEvent(event_id=str(event.event_id), product_id=str(event.product_id),
+                                       outcome=outcome, processed_at=datetime.now(timezone.utc)))
+            receipts.add(str(event.event_id))
+            results.append((updated, outcome))
+    return results

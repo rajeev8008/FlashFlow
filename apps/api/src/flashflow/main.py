@@ -1,19 +1,22 @@
 import asyncio
 import logging
 import secrets
-from contextlib import asynccontextmanager, suppress
+from datetime import datetime, timezone
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, HTTPException, Header, Depends
 from redis.asyncio import Redis
 from sqlalchemy import select, text
 
 from .config import settings
-from .database import Session
+from .database import Session, engine
 from .models import ProductRow, PricingDecision
 from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 from .schemas import Product
-from .stream import ConnectionManager, InventoryConsumer
+from .stream import ConnectionManager, ConsumerGroup
 from .resilience import Catalog, Faults
+from .observability import Metrics
+from .timing import timings
 
 manager = ConnectionManager()
 faults = Faults()
@@ -22,11 +25,13 @@ catalog = Catalog(faults)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.basicConfig(level=logging.INFO)
-    worker = InventoryConsumer(manager, faults)
+    logging.basicConfig(level=settings.logging_level)
+    worker = ConsumerGroup(manager, faults)
     app.state.worker = worker
     task = asyncio.create_task(worker.run())
     app.state.consumer_task = task
+    app.state.metrics = Metrics(worker, manager)
+    metrics_task = asyncio.create_task(app.state.metrics.run())
     try:
         yield
     finally:
@@ -34,13 +39,19 @@ async def lifespan(app: FastAPI):
             while not queue.empty():
                 queue.get_nowait()
             queue.put_nowait(None)
-        task.cancel()
-        with suppress(asyncio.CancelledError):
-            await task
+        worker.stop()
+        metrics_task.cancel()
+        await asyncio.gather(metrics_task, return_exceptions=True)
+        try:
+            await asyncio.wait_for(task, settings.shutdown_timeout_seconds)
+        except (TimeoutError, asyncio.CancelledError):
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         await catalog.redis.aclose()
+        await engine.dispose()
 
 
-app = FastAPI(title="FlashFlow API", version="0.5.0", lifespan=lifespan)
+app = FastAPI(title="FlashFlow API", version="0.6.0", lifespan=lifespan)
 
 
 @app.get("/pricing/decisions")
@@ -57,9 +68,11 @@ async def pricing_decisions(product_id: UUID | None = None, limit: int = 50):
 async def health() -> dict[str, str]:
     if app.state.consumer_task.done():
         raise HTTPException(503, "inventory consumer stopped")
-    async with Session() as session:
-        await session.execute(text("SELECT 1"))
-    redis = Redis.from_url(settings.redis_url)
+    async def check_database():
+        async with Session() as session:
+            await session.execute(text("SELECT 1"))
+    await asyncio.wait_for(check_database(), 2)
+    redis = Redis.from_url(settings.redis_url, socket_timeout=1, socket_connect_timeout=1)
     try:
         await redis.ping()
     finally:
@@ -75,7 +88,16 @@ async def products(limit: int = 100) -> list[ProductRow]:
 
 @app.get("/metrics")
 async def metrics():
-    return {**{key: app.state.worker.counters[key] for key in ("processed", "failed", "duplicate", "stale", "dlq")}, "active_websocket_clients": len(manager.clients), "inventory_circuit": catalog.breaker.describe(), "consumer_paused": faults.consumer_paused}
+    return {**{key: app.state.worker.counters[key] for key in ("processed", "failed", "duplicate", "stale", "dlq", "kafka_received", "pricing_received", "completed", "inventory_completed")},
+            **app.state.metrics.sample, "stage_latencies": timings.snapshot(), "active_websocket_clients": len(manager.clients), "websocket_messages": manager.counters["sent"],
+            "slow_client_disconnects": manager.counters["slow_disconnects"], "redis_cache_reads": catalog.cache_reads,
+            "redis_cache_hits": catalog.cache_hits, "redis_cache_hit_rate": catalog.cache_hits / catalog.cache_reads if catalog.cache_reads else None,
+            "inventory_circuit": catalog.breaker.describe(), "consumer_paused": faults.consumer_paused,
+            "consumer_instances": settings.consumer_instances, "consumer_batch_size": settings.consumer_batch_size,
+            "consumer_batch_enabled": settings.consumer_batch_enabled,
+            "failed_socket_sends": manager.counters["failed_sends"],
+            "disconnected_clients": manager.counters["disconnected"],
+            "server_now": datetime.now(timezone.utc).isoformat()}
 
 
 @app.get("/inventory")

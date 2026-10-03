@@ -21,7 +21,9 @@ def test_kafka_record_uses_product_id_key_and_valid_json() -> None:
     event = EventEnvelope(event_type=EventType.STOCK_RESERVED, product_id=uuid4(), source="test", payload={"quantity": 1})
     record = kafka_record(event)
     assert record.key.decode() == str(event.product_id)
-    assert EventEnvelope.model_validate_json(record.value) == event
+    parsed = EventEnvelope.model_validate_json(record.value)
+    assert parsed.model_dump(exclude={'producer_enqueued_at'}) == event.model_dump(exclude={'producer_enqueued_at'})
+    assert parsed.producer_enqueued_at >= event.timestamp
 
 
 def test_seed_is_deterministic() -> None:

@@ -1,12 +1,16 @@
 import asyncio
 import random
 import time
+import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import StrEnum
 
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer, TopicPartition
 from aiokafka.admin import AIOKafkaAdminClient
 from sqlalchemy import select
+from redis.asyncio import Redis
+from redis.exceptions import RedisError
 
 from .config import settings
 from .database import Session
@@ -28,6 +32,15 @@ DEFAULT_EVENT_WEIGHTS = {
     EventType.STOCK_RELEASED: 20,
     EventType.INVENTORY_RESTOCKED: 10,
 }
+
+
+async def report_producer(redis, rate, submitted):
+    # Telemetry must not stop durable production when the cache is unavailable.
+    try:
+        await redis.set('simulator:status', json.dumps({'configured_rate': rate,
+            'submitted_events': submitted, 'sampled_at': datetime.now(timezone.utc).isoformat()}), ex=5)
+    except (ConnectionError, TimeoutError, RedisError):
+        pass
 
 
 @dataclass
@@ -98,12 +111,19 @@ async def wait_for_backlog() -> None:
     try:
         await admin.start()
         await probe.start()
-        partitions = [TopicPartition(settings.kafka_inventory_topic, index) for index in range(settings.kafka_inventory_partitions)]
-        ends = await probe.end_offsets(partitions)
+        partitions = [TopicPartition(topic, index) for topic in
+                      (settings.kafka_inventory_topic, settings.kafka_pricing_topic)
+                      for index in range(settings.kafka_inventory_partitions)]
+        stable = 0
         while True:
+            ends = await probe.end_offsets(partitions)
             offsets = await admin.list_consumer_group_offsets(settings.kafka_consumer_group)
             if all(offsets.get(partition) and offsets[partition].offset >= end or end == 0 for partition, end in ends.items()):
-                return
+                stable += 1
+                if stable >= 2:
+                    return
+            else:
+                stable = 0
             await asyncio.sleep(1)
     finally:
         await admin.close()
@@ -118,8 +138,10 @@ async def run() -> None:
     await wait_for_backlog()
     catalog = await load_catalog(settings.simulator_product_count)
     producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_bootstrap_servers)
+    redis = Redis.from_url(settings.redis_url, socket_timeout=.2, socket_connect_timeout=.2)
     await producer.start()
     started = time.monotonic()
+    submitted = 0
     try:
         while not settings.simulator_burst_duration_seconds or time.monotonic() - started < settings.simulator_burst_duration_seconds:
             tick = time.monotonic()
@@ -127,10 +149,13 @@ async def run() -> None:
                 event = next_event(rng.choice(catalog), rng, event_weights)
                 record = kafka_record(event)
                 await producer.send(settings.kafka_inventory_topic, key=record.key, value=record.value)
+                submitted += 1
             await producer.flush()
+            await report_producer(redis, rate, submitted)
             await asyncio.sleep(max(0, 1 - (time.monotonic() - tick)))
     finally:
         await producer.stop()
+        await redis.aclose()
 
 
 if __name__ == "__main__":

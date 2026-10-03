@@ -3,6 +3,19 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ResiliencePanel } from "./resilience-panel";
 import {
   arrivals,
+  observedProducts,
+  calibrateClock,
+  clockEstimate,
+  serverAlignedNow,
+  recordAlignedLatency,
+  alignedUiLatencies,
+  flushedAt,
+  clientStages,
+  recordStage,
+  eventArrivals,
+  percentile,
+  recordLatency,
+  uiLatencies,
   Mode,
   Product,
   startLive,
@@ -17,10 +30,19 @@ function Card({ product }: { product: Product }) {
     stats.renders++;
     element.current?.setAttribute("data-commits", String(commits.current));
     const arrival = arrivals.get(product.product_id);
-    if (arrival !== undefined) {
+    if (arrival !== undefined && observedProducts.get(product.product_id) === product) {
       stats.latency += performance.now() - arrival;
       stats.samples++;
+      const flushed = flushedAt.get(product.product_id);
+      if (flushed !== undefined) recordStage("render", performance.now() - flushed);
+      flushedAt.delete(product.product_id);
       arrivals.delete(product.product_id);
+      const eventAt = eventArrivals.get(product.product_id);
+      if (eventAt !== undefined) recordLatency(Date.now() - eventAt);
+      const alignedNow = serverAlignedNow();
+      if (eventAt !== undefined && alignedNow !== null) recordAlignedLatency(alignedNow - eventAt);
+      eventArrivals.delete(product.product_id);
+      observedProducts.delete(product.product_id);
     }
   });
   const available = product.stock - product.reserved_stock;
@@ -123,7 +145,74 @@ function EngineeringPanel() {
     renders: 0,
     latency: 0,
     fps: 0,
+    p50: null as number | null,
+    p95: null as number | null,
+    p99: null as number | null,
+    browserQueue: null as number | null,
+    render: null as number | null,
+    socketTransport: null as number | null,
+    coalesced: 0,
+    alignedP50: null as number | null,
+    alignedP95: null as number | null,
+    alignedP99: null as number | null,
+    clockOffset: null as number | null,
+    clockUncertainty: null as number | null,
   });
+  const [backend, setBackend] = useState<Record<string, number | null> | null>(
+    null,
+  );
+  useEffect(() => {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function poll() {
+      try {
+        const sentAt = Date.now();
+        const response = await fetch("/api/metrics", {
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(4000),
+          ]),
+        });
+        if (!response.ok) throw new Error("Unavailable");
+        const data = await response.json();
+        calibrateClock(Date.parse(data.server_now), sentAt, Date.now());
+        if (!controller.signal.aborted)
+          setBackend({
+            kafka: data.rates?.kafka_events_per_second,
+            processedRate: data.rates?.processed_events_per_second,
+            producedRate: data.rates?.broker_produced_per_second,
+            simulatorRate: data.simulator?.configured_rate,
+            inventoryRate: data.rates?.inventory_processed_per_second,
+            socketFailures: data.failed_socket_sends,
+            disconnected: data.disconnected_clients,
+            ...Object.fromEntries(Object.entries(data.stage_latencies ?? {}).flatMap(([stage, values]) =>
+              [50, 95, 99].map((p) => [stage + p, (values as Record<string, number>)[`p${p}_ms`]]))),
+            ...Object.fromEntries(Object.entries(data.lag_by_partition ?? {}).map(([key, value]) => ["partition " + key, value])),
+            pricing: data.rates?.pricing_events_per_second,
+            websocket: data.rates?.websocket_messages_per_second,
+            lag: data.consumer_lag,
+            processed: data.processed,
+            duplicate: data.duplicate,
+            failed: data.failed,
+            dlq: data.dlq,
+            clients: data.active_websocket_clients,
+            cache:
+              data.redis_cache_hit_rate == null
+                ? null
+                : data.redis_cache_hit_rate * 100,
+          });
+      } catch {
+        if (!controller.signal.aborted) setBackend(null);
+      } finally {
+        if (!controller.signal.aborted) timer = setTimeout(poll, 2000);
+      }
+    }
+    void poll();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, []);
   useEffect(() => {
     let previous = { ...stats },
       started = performance.now(),
@@ -145,6 +234,18 @@ function EngineeringPanel() {
         renders: (stats.renders - previous.renders) / seconds,
         latency: samples ? (stats.latency - previous.latency) / samples : 0,
         fps: (stats.frames - previous.frames) / seconds,
+        p50: percentile(uiLatencies, 0.5),
+        p95: percentile(uiLatencies, 0.95),
+        p99: percentile(uiLatencies, 0.99),
+        browserQueue: percentile(clientStages.browserQueue ?? [], .95),
+        render: percentile(clientStages.render ?? [], .95),
+        socketTransport: percentile(clientStages.socketTransport ?? [], .95),
+        coalesced: (stats.coalesced - previous.coalesced) / seconds,
+        alignedP50: serverAlignedNow() === null ? null : percentile(alignedUiLatencies, .5),
+        alignedP95: serverAlignedNow() === null ? null : percentile(alignedUiLatencies, .95),
+        alignedP99: serverAlignedNow() === null ? null : percentile(alignedUiLatencies, .99),
+        clockOffset: serverAlignedNow() === null ? null : clockEstimate.offsetMs,
+        clockUncertainty: serverAlignedNow() === null ? null : clockEstimate.uncertaintyMs,
       });
       previous = { ...stats };
       started = now;
@@ -155,25 +256,76 @@ function EngineeringPanel() {
     };
   }, []);
   const labels: Record<string, string> = {
+    alignedP50: "Clock-aligned event to UI P50 ms",
+    alignedP95: "Clock-aligned event to UI P95 ms",
+    alignedP99: "Clock-aligned event to UI P99 ms",
+    clockOffset: "Estimated server clock offset ms",
+    clockUncertainty: "Clock estimate RTT/2 ms",
     events: "Socket events/s",
     flushes: "UI flushes/s",
     merged: "Events/flush",
     renders: "Card commits/s",
     latency: "Receipt → commit ms",
     fps: "Estimated FPS",
+    p50: "Raw event to UI P50 ms",
+    p95: "Raw event to UI P95 ms",
+    p99: "Raw event to UI P99 ms",
+    browserQueue: "Browser queue P95 ms",
+    render: "Flush to commit P95 ms",
+    socketTransport: "Socket transport P95 ms",
+    coalesced: "Coalesced events/s",
+    simulatorRate: "Simulator target events/s",
+    inventoryRate: "Inventory completed/s",
+    socketFailures: "Failed socket sends",
+    disconnected: "Disconnected clients",
+    processedRate: "Completed records/s",
+    producedRate: "Broker ingress records/s",
+    kafka: "Consumed Kafka records/s",
+    pricing: "Pricing records/s",
+    websocket: "Fanout sends/s",
+    lag: "Committed consumer lag",
+    processed: "Processed",
+    duplicate: "Duplicates",
+    failed: "Failed attempts",
+    dlq: "DLQ",
+    clients: "Socket clients",
+    cache: "Fallback cache hits %",
   };
   return (
     <section className="engineering" aria-label="Engineering metrics">
       <div>
         <p className="eyebrow">UNDER THE HOOD</p>
-        <h2>Rendering, measured.</h2>
-        <p>One-second samples · real browser activity</p>
+        <h2>Pipeline and rendering, measured.</h2>
+        <p>Browser: 1s · backend: 2s · P50/P95/P99: latest 512 commits</p>
+        <p>
+          Event latency needs synchronized clocks; coalesced events are not
+          render samples. Clock-aligned gauges use an HTTP midpoint estimate;
+          RTT/2 shows its timing uncertainty.
+        </p>
       </div>
       <dl>
-        {Object.entries(metrics).map(([key, value]) => (
+        {Object.entries({
+          ...metrics,
+          ...(backend ?? {
+            kafka: null,
+            lag: null,
+            pricing: null,
+            websocket: null,
+            processed: null,
+            duplicate: null,
+            failed: null,
+            dlq: null,
+            clients: null,
+            cache: null,
+          }),
+        }).map(([key, value]) => (
           <div key={key}>
-            <dt>{labels[key]}</dt>
-            <dd data-metric={key}>{value.toFixed(1)}</dd>
+            <dt>{labels[key] ?? (key.startsWith("partition ") ? key : key.replace(/(50|95|99)$/, " P$1 ms"))}</dt>
+            <dd data-metric={key}>
+              {typeof value === "number" && Number.isFinite(value)
+                ? value.toFixed(1)
+                : "N/A"}
+            </dd>
           </div>
         ))}
       </dl>

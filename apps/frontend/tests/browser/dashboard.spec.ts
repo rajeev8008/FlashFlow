@@ -38,6 +38,7 @@ test("price-only Kafka snapshots update direction, reason and revision without s
   socket!.send(
     JSON.stringify({
       type: "product_update",
+      event_at: new Date().toISOString(),
       product: {
         ...product,
         price_version: 1,
@@ -58,6 +59,7 @@ test("price-only Kafka snapshots update direction, reason and revision without s
   // Periodic older catalog snapshots must not undo the delivered price.
   await page.waitForTimeout(2300);
   await expect(card).toContainText("$10.50");
+  await expect(page.locator('[data-metric="p95"]')).not.toHaveText("N/A");
   await expect(card).toContainText("18 available");
 });
 test("live changes, isolation, benchmark modes, reconnect and degraded/offline states", async ({

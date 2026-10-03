@@ -91,6 +91,7 @@ class Catalog:
         self.loader = loader
         self.breaker = breaker or CircuitBreaker(settings.breaker_failure_threshold, settings.breaker_recovery_seconds, settings.breaker_half_open_trials)
         self.cached_at = None
+        self.cache_reads = self.cache_hits = 0
 
     async def live(self):
         if self.faults.inventory_unavailable:
@@ -112,6 +113,7 @@ class Catalog:
         try:
             products = await self.breaker.call(self.live)
         except Exception:
+            self.cache_reads += 1
             try:
                 if self.faults.redis_unavailable:
                     raise DependencyUnavailable("Redis failure injected")
@@ -123,6 +125,7 @@ class Catalog:
                 if timestamp.tzinfo is None or timestamp > datetime.now(timezone.utc):
                     raise ValueError("Invalid cache timestamp")
                 products = [Product.model_validate(p).model_dump(mode="json") for p in cached["products"]]
+                self.cache_hits += 1
                 return {"products": products, "metadata": self.metadata("redis", cached["snapshot_at"], "Live inventory unavailable; showing a cached snapshot")}
             except Exception:
                 return {"products": [], "metadata": self.metadata("unavailable", None, "Inventory and fallback unavailable; retaining last known browser data")}

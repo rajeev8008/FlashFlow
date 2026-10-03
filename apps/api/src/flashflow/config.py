@@ -28,6 +28,16 @@ class Settings(BaseSettings):
     pricing_max_step: Decimal = Field(Decimal("0.05"), gt=0, le=Decimal("0.20"))
     consumer_max_attempts: int = Field(3, ge=1)
     consumer_retry_seconds: float = Field(0.5, ge=0)
+    consumer_instances: int = Field(1, ge=1, le=6)
+    consumer_batch_size: int = Field(50, ge=1, le=500)
+    consumer_batch_enabled: bool = True
+    consumer_poll_ms: int = Field(50, ge=1, le=1000)
+    shutdown_timeout_seconds: float = Field(30, gt=0)
+    database_pool_size: int = Field(10, ge=1, le=100)
+    database_max_overflow: int = Field(5, ge=0, le=100)
+    websocket_queue_size: int = Field(100, ge=1, le=10000)
+    websocket_send_timeout_seconds: float = Field(5, gt=0)
+    logging_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO'
     websocket_heartbeat_seconds: float = Field(15, gt=0)
     app_env: Literal["development", "test", "production"] = "production"
     enable_chaos: bool = False
@@ -45,6 +55,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def pricing_limits(self):
+        if self.consumer_instances > self.kafka_inventory_partitions:
+            raise ValueError("consumer instances must not exceed inventory partition count")
         if self.pricing_min_price > self.pricing_max_price:
             raise ValueError("pricing minimum must not exceed maximum")
         if self.pricing_reversal_seconds < self.pricing_cooldown_seconds:

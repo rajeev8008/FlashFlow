@@ -110,8 +110,58 @@ export const stats = {
   latency: 0,
   samples: 0,
   frames: 0,
+  coalesced: 0,
 };
 export const arrivals = new Map<string, number>();
+export const eventArrivals = new Map<string, number>();
+export const observedProducts = new Map<string, Product>();
+export const uiLatencies: number[] = [];
+export const alignedUiLatencies: number[] = [];
+export const clockEstimate = { offsetMs: null as number | null, uncertaintyMs: null as number | null, sampledAt: 0 };
+export function calibrateClock(serverMs: number, sentMs: number, receivedMs: number) {
+  const rtt = receivedMs - sentMs;
+  if (!Number.isFinite(serverMs) || rtt < 0 || rtt > 2000) return;
+  clockEstimate.offsetMs = serverMs - (sentMs + receivedMs) / 2;
+  clockEstimate.uncertaintyMs = rtt / 2;
+  clockEstimate.sampledAt = performance.now();
+}
+export function serverAlignedNow(): number | null {
+  return clockEstimate.offsetMs !== null && performance.now() - clockEstimate.sampledAt < 15000
+    ? Date.now() + clockEstimate.offsetMs : null;
+}
+export function recordAlignedLatency(value: number) {
+  if (!Number.isFinite(value) || value < 0) return;
+  alignedUiLatencies.push(value);
+  if (alignedUiLatencies.length > 512) alignedUiLatencies.shift();
+}
+export const flushedAt = new Map<string, number>();
+export const clientStages: Record<string, number[]> = {};
+export function recordStage(stage: string, value: number) {
+  if (!Number.isFinite(value) || value < 0) return;
+  const samples = (clientStages[stage] ??= []);
+  samples.push(value);
+  if (samples.length > 512) samples.shift();
+}
+function markFlush(products: Product[]) {
+  for (const p of products) {
+    const now = performance.now();
+    const arrival = arrivals.get(p.product_id);
+    if (arrival !== undefined) {
+      recordStage("browserQueue", now - arrival);
+      flushedAt.set(p.product_id, now);
+    }
+  }
+}
+export function percentile(values: number[], fraction: number): number | null {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)];
+}
+export function recordLatency(value: number) {
+  if (!Number.isFinite(value) || value < 0) return;
+  uiLatencies.push(value);
+  if (uiLatencies.length > 512) uiLatencies.shift();
+}
 export const useInventory = create<{
   productsById: Record<string, Product>;
   ids: string[];
@@ -165,15 +215,20 @@ export function createBuffer(
     if (!pending.size) return;
     stats.flushes++;
     stats.merged += count;
-    flush([...pending.values()]);
+    const products = [...pending.values()];
+    stats.coalesced += count - products.length;
+    markFlush(products);
+    flush(products);
     pending.clear();
     count = 0;
   }
   return {
     push(p: Product) {
       count++;
-      if (isNewer(p, pending.get(p.product_id))) pending.set(p.product_id, p);
+      if (!isNewer(p, pending.get(p.product_id))) return false;
+      pending.set(p.product_id, p);
       if (frame === undefined) frame = schedule(drain);
+      return true;
     },
     drain() {
       if (frame !== undefined) cancel(frame);
@@ -222,6 +277,7 @@ export function startLive() {
     status(generation ? "RECONNECTING" : "CONNECTING");
     const current = ++generation;
     const ws = new WebSocket(
+      process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
       `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:8000/ws`,
     );
     let lastMessage = performance.now();
@@ -305,13 +361,24 @@ export function startLive() {
         }
         const p: Product = message.product;
         stats.events++;
+        if (typeof message.websocket_sent_at === "string")
+          recordStage("socketTransport", Date.now() - Date.parse(message.websocket_sent_at));
         if (!isNewer(p, useInventory.getState().productsById[p.product_id]))
           return;
+        const batched = useInventory.getState().mode === "BATCHED";
+        if (batched && !buffer.push(p)) return;
         arrivals.set(p.product_id, performance.now());
-        if (useInventory.getState().mode === "BATCHED") buffer.push(p);
-        else {
+        observedProducts.set(p.product_id, p);
+        const eventAt =
+          typeof message.event_at === "string"
+            ? Date.parse(message.event_at)
+            : NaN;
+        if (Number.isFinite(eventAt)) eventArrivals.set(p.product_id, eventAt);
+        else eventArrivals.delete(p.product_id);
+        if (!batched) {
           stats.flushes++;
           stats.merged++;
+          markFlush([p]);
           applyProducts([p]);
         }
       } catch {
@@ -353,6 +420,10 @@ export function startLive() {
     controller?.abort();
     socket?.close();
     buffer.stop();
+    arrivals.clear();
+    eventArrivals.clear();
+    flushedAt.clear();
+    observedProducts.clear();
     unsubscribe();
     window.removeEventListener("offline", offline);
     window.removeEventListener("online", online);

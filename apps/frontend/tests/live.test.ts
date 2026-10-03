@@ -1,11 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  calibrateClock,
+  clockEstimate,
   applyProducts,
+  arrivals,
+  flushedAt,
+  clientStages,
+  recordStage,
   createBuffer,
   isProduct,
   isSnapshot,
   isNewer,
+  percentile,
+  recordLatency,
+  uiLatencies,
   Product,
   reconnectDelay,
   useInventory,
@@ -22,6 +31,17 @@ const product: Product = {
   sales_velocity: 0,
   last_updated: "2026-10-02T00:00:00Z",
 };
+test("latency percentiles are bounded and unavailable without event timestamps", () => {
+  uiLatencies.length = 0;
+  assert.equal(percentile(uiLatencies, 0.95), null);
+  recordLatency(-1);
+  recordLatency(NaN);
+  assert.equal(uiLatencies.length, 0);
+  for (let i = 1; i <= 600; i++) recordLatency(i);
+  assert.equal(uiLatencies.length, 512);
+  assert.equal(percentile([1, 2, 3, 4, 100], 0.95), 100);
+  assert.equal(percentile([1, 2, 3, 4, 100], 0.5), 3);
+});
 test("price-only revisions update cards without inventory rollback", () => {
   const priced = { ...product, price_version: 1, current_price: "10.50" };
   assert.ok(isNewer(priced, product));
@@ -141,4 +161,31 @@ test("exponential reconnect backoff is capped", () => {
     [0, 1, 2, 3, 4, 5, 100].map(reconnectDelay),
     [1000, 2000, 4000, 8000, 16000, 30000, 30000],
   );
+});
+
+test("client stage samples are bounded and flush timing uses the newest arrival", () => {
+  clientStages.browserQueue = [];
+  recordStage("browserQueue", -1);
+  recordStage("browserQueue", NaN);
+  assert.equal(clientStages.browserQueue.length, 0);
+  for (let i = 0; i < 600; i++) recordStage("browserQueue", i);
+  assert.equal(clientStages.browserQueue.length, 512);
+  let callback: FrameRequestCallback = () => {};
+  arrivals.set(product.product_id, performance.now());
+  const buffer = createBuffer(() => {}, cb => { callback = cb; return 1; }, () => {});
+  buffer.push(product);
+  buffer.push({ ...product, version: 2 });
+  callback(0);
+  assert.ok(flushedAt.has(product.product_id));
+  arrivals.clear();
+  flushedAt.clear();
+});
+
+test("cross-process clock estimate uses request midpoint and exposes uncertainty", () => {
+  calibrateClock(1600, 1000, 1200);
+  assert.equal(clockEstimate.offsetMs, 500);
+  assert.equal(clockEstimate.uncertaintyMs, 100);
+  calibrateClock(NaN, 1000, 1200);
+  calibrateClock(1600, 1000, 4000);
+  assert.equal(clockEstimate.offsetMs, 500);
 });

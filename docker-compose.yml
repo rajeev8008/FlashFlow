@@ -49,9 +49,11 @@ services:
       DLQ_TOPIC: ${KAFKA_DLQ_TOPIC:-inventory-events-dlq}
       PRICING_TOPIC: ${KAFKA_PRICING_TOPIC:-pricing-events}
       PARTITIONS: ${KAFKA_INVENTORY_PARTITIONS:-6}
-    command: ["sh", "-c", "for topic in \"$$INVENTORY_TOPIC\" \"$$DLQ_TOPIC\" \"$$PRICING_TOPIC\"; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic \"$$topic\" --partitions \"$$PARTITIONS\" --replication-factor 1 || exit 1; done"]
+      TIMESTAMP_TYPE: ${KAFKA_TIMESTAMP_TYPE:-LogAppendTime}
+    command: ["sh", "-c", "for topic in \"$$INVENTORY_TOPIC\" \"$$DLQ_TOPIC\" \"$$PRICING_TOPIC\"; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic \"$$topic\" --partitions \"$$PARTITIONS\" --replication-factor 1 --config message.timestamp.type=$$TIMESTAMP_TYPE || exit 1; done"]
 
   api:
+    init: true
     build: ./apps/api
     env_file:
       - path: .env
@@ -61,6 +63,9 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
       APP_ENV: ${APP_ENV:-production}
+      CONSUMER_INSTANCES: ${CONSUMER_INSTANCES:-1}
+      CONSUMER_BATCH_SIZE: ${CONSUMER_BATCH_SIZE:-50}
+      CONSUMER_BATCH_ENABLED: ${CONSUMER_BATCH_ENABLED:-true}
       ENABLE_CHAOS: ${ENABLE_CHAOS:-false}
       CHAOS_TOKEN: ${CHAOS_TOKEN:-}
     depends_on:
@@ -70,7 +75,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
-    command: ["sh", "-c", "alembic upgrade head && python -m flashflow.seed && uvicorn flashflow.main:app --host 0.0.0.0 --port 8000"]
+    command: ["sh", "-c", "alembic upgrade head && python -m flashflow.seed && exec uvicorn flashflow.main:app --host 0.0.0.0 --port 8000 --ws-max-size 1024 --ws-max-queue 16"]
+    stop_grace_period: 40s
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
@@ -80,6 +86,7 @@ services:
       retries: 20
 
   simulator:
+    init: true
     build: ./apps/api
     env_file:
       - path: .env
@@ -93,7 +100,11 @@ services:
     command: ["python", "-m", "flashflow.simulator"]
 
   frontend:
-    build: ./apps/frontend
+    init: true
+    build:
+      context: ./apps/frontend
+      args:
+        NEXT_PUBLIC_WEBSOCKET_URL: ${NEXT_PUBLIC_WEBSOCKET_URL:-}
     environment:
       API_INTERNAL_URL: http://api:8000
       APP_ENV: ${APP_ENV:-production}
@@ -103,6 +114,11 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
 volumes:
   postgres-data:

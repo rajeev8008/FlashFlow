@@ -57,6 +57,7 @@ class EventEnvelope(BaseModel):
     schema_version: str = "1.0"
     source: str = Field(min_length=1)
     payload: dict[str, Any]
+    producer_enqueued_at: datetime | None = None
 
 
 class KafkaRecord(BaseModel):
@@ -67,5 +68,5 @@ class KafkaRecord(BaseModel):
 def kafka_record(event: EventEnvelope) -> KafkaRecord:
     return KafkaRecord(
         key=str(event.product_id).encode(),
-        value=event.model_dump_json().encode(),
+        value=event.model_copy(update={"producer_enqueued_at": datetime.now(timezone.utc)}).model_dump_json().encode(),
     )

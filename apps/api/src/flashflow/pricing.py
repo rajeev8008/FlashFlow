@@ -59,15 +59,21 @@ def record_decision(session, row, event):
 
 
 async def publish_decision(event, producer):
+    await publish_decisions([event], producer)
+
+
+async def publish_decisions(events, producer):
     async with Session() as session:
-        decision = await session.scalar(select(PricingDecision).where(PricingDecision.source_event_id == str(event.event_id)))
-        if decision is None or decision.status != 'PENDING' or decision.published:
-            return
-        envelope = EventEnvelope(event_id=decision.decision_id, product_id=decision.product_id, event_type=EventType.PRICE_UPDATED,
-            source='pricing-rules', payload={'decision_id': decision.decision_id})
-        await producer.send_and_wait(settings.kafka_pricing_topic, key=decision.product_id.encode(), value=envelope.model_dump_json().encode())
-        decision.published = True
-        await session.commit()
+        decisions = (await session.scalars(select(PricingDecision).where(
+            PricingDecision.source_event_id.in_([str(event.event_id) for event in events]),
+            PricingDecision.status == 'PENDING', PricingDecision.published.is_(False)))).all()
+        for decision in decisions:
+            envelope = EventEnvelope(event_id=decision.decision_id, product_id=decision.product_id, event_type=EventType.PRICE_UPDATED,
+                source='pricing-rules', payload={'decision_id': decision.decision_id})
+            await producer.send_and_wait(settings.kafka_pricing_topic, key=decision.product_id.encode(), value=envelope.model_dump_json().encode())
+            decision.published = True
+        if decisions:
+            await session.commit()
 
 
 async def apply_decision(event):
