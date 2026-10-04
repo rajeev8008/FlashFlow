@@ -5,6 +5,9 @@ import {
   clockEstimate,
   applyProducts,
   arrivals,
+  observedProducts,
+  resetLatencySamples,
+  pruneLatencySamples,
   flushedAt,
   clientStages,
   recordStage,
@@ -164,6 +167,7 @@ test("exponential reconnect backoff is capped", () => {
 });
 
 test("client stage samples are bounded and flush timing uses the newest arrival", () => {
+  useInventory.setState({ productsById: {}, ids: [] });
   clientStages.browserQueue = [];
   recordStage("browserQueue", -1);
   recordStage("browserQueue", NaN);
@@ -172,9 +176,18 @@ test("client stage samples are bounded and flush timing uses the newest arrival"
   assert.equal(clientStages.browserQueue.length, 512);
   let callback: FrameRequestCallback = () => {};
   arrivals.set(product.product_id, performance.now());
-  const buffer = createBuffer(() => {}, cb => { callback = cb; return 1; }, () => {});
+  const buffer = createBuffer(
+    () => {},
+    (cb) => {
+      callback = cb;
+      return 1;
+    },
+    () => {},
+  );
   buffer.push(product);
-  buffer.push({ ...product, version: 2 });
+  const newest = { ...product, version: 2 };
+  observedProducts.set(product.product_id, newest);
+  buffer.push(newest);
   callback(0);
   assert.ok(flushedAt.has(product.product_id));
   arrivals.clear();
@@ -188,4 +201,49 @@ test("cross-process clock estimate uses request midpoint and exposes uncertainty
   calibrateClock(NaN, 1000, 1200);
   calibrateClock(1600, 1000, 4000);
   assert.equal(clockEstimate.offsetMs, 500);
+});
+
+test("latency windows expire and reset while a real stalled frame stays measurable", () => {
+  resetLatencySamples();
+  recordStage("browserQueue", 12000);
+  assert.equal(percentile(clientStages.browserQueue, 0.95), 12000);
+  pruneLatencySamples(performance.now() + 30001);
+  assert.equal(percentile(clientStages.browserQueue, 0.95), null);
+  recordLatency(30);
+  recordStage("render", 2);
+  resetLatencySamples();
+  assert.equal(uiLatencies.length, 0);
+  assert.equal(clientStages.render.length, 0);
+  assert.equal(clockEstimate.offsetMs, null);
+});
+
+test("queue timing never uses a prior product's receipt or a superseded catalog revision", () => {
+  resetLatencySamples();
+  useInventory.setState({ productsById: {}, ids: [] });
+  let run: FrameRequestCallback = () => {};
+  const buffer = createBuffer(
+    () => {},
+    (cb) => {
+      run = cb;
+      return 1;
+    },
+    () => {},
+  );
+  arrivals.set(product.product_id, performance.now() - 12000);
+  observedProducts.set(product.product_id, product);
+  buffer.push(product);
+  run(0);
+  assert.ok(clientStages.browserQueue.at(-1)! >= 12000);
+  resetLatencySamples();
+  arrivals.set(product.product_id, performance.now() - 12000);
+  observedProducts.set(product.product_id, { ...product });
+  buffer.push(product);
+  run(0);
+  assert.equal(clientStages.browserQueue.length, 0);
+  observedProducts.set(product.product_id, product);
+  applyProducts([{ ...product, version: 2 }]);
+  buffer.push(product);
+  run(0);
+  assert.equal(clientStages.browserQueue.length, 0);
+  resetLatencySamples();
 });

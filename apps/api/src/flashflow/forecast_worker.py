@@ -31,6 +31,7 @@ from .models import (
 )
 from .schemas import EventEnvelope, EventType, kafka_record
 from .forecasting import ForecastModel, features, predict, assess
+from .recommendation_policy import should_recommend, materially_changed
 from .retail import now
 from .retail_contracts import ForecastOutput
 
@@ -235,16 +236,28 @@ class ForecastWorker:
                 pid
                 for s in active
                 if s.kind in ("FLASH_SALE", "DEMAND_SPIKE")
+                and (s.kind != "FLASH_SALE" or s.data["tick"] >= s.data["bins"] // 3)
                 for pid in s.data["product_ids"]
             }
-            pending = (
-                await session.scalars(
-                    select(RecommendationRow)
-                    .where(RecommendationRow.status == "PENDING")
-                    .with_for_update()
+            latest_ids = (
+                select(RecommendationRow.recommendation_id)
+                .distinct(RecommendationRow.product_id)
+                .order_by(
+                    RecommendationRow.product_id, RecommendationRow.created_at.desc()
+                )
+            )
+            latest_recs = (
+                await session.execute(
+                    select(RecommendationRow, ForecastRow.data)
+                    .outerjoin(
+                        ForecastRow,
+                        ForecastRow.forecast_id == RecommendationRow.forecast_id,
+                    )
+                    .where(RecommendationRow.recommendation_id.in_(latest_ids))
+                    .with_for_update(of=RecommendationRow)
                 )
             ).all()
-            pending_map = {r.product_id: r for r in pending}
+            rec_map = {r.product_id: (r, data) for r, data in latest_recs}
             current_ids = [
                 str(uuid5(UUID(p.product_id), f"forecast:{end}")) for p in products
             ]
@@ -316,19 +329,33 @@ class ForecastWorker:
                 )
                 self.counters["forecast_successes"] += 1
                 self.counters["baseline_fallbacks"] += int(output["fallback"])
-                old = pending_map.get(p.product_id)
-                if (
-                    old
-                    and output["recommended_quantity"]
-                    and (now() - old.created_at).total_seconds()
-                    <= settings.forecast_stale_seconds
-                ):
-                    continue
-                if old:
-                    old.status, old.updated_at = "EXPIRED", now()
-                if (
-                    output["recommended_quantity"]
-                    and output["feature_age_seconds"] <= settings.forecast_stale_seconds
+                old, previous = rec_map.get(p.product_id, (None, None))
+                changed = old and materially_changed(
+                    old,
+                    previous,
+                    output,
+                    settings.recommendation_min_change_units,
+                    settings.recommendation_change_fraction,
+                )
+                if old and old.status == "PENDING":
+                    expired = (
+                        at - old.created_at
+                    ).total_seconds() > settings.forecast_stale_seconds
+                    if expired or changed or not output["recommended_quantity"]:
+                        old.status = "EXPIRED" if expired else "SUPERSEDED"
+                        old.updated_at = at
+                    else:
+                        continue
+                if output[
+                    "feature_age_seconds"
+                ] <= settings.forecast_stale_seconds and should_recommend(
+                    old,
+                    previous,
+                    output,
+                    at,
+                    settings.recommendation_cooldown_seconds,
+                    settings.recommendation_min_change_units,
+                    settings.recommendation_change_fraction,
                 ):
                     session.add(
                         RecommendationRow(

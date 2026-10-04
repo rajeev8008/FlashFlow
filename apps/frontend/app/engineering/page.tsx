@@ -16,6 +16,7 @@ import {
   recordStage,
   eventArrivals,
   percentile,
+  pruneLatencySamples,
   recordLatency,
   uiLatencies,
   Mode,
@@ -158,6 +159,7 @@ function EngineeringPanel() {
     browserQueue: null as number | null,
     render: null as number | null,
     socketTransport: null as number | null,
+    rawSocketTransport: null as number | null,
     coalesced: 0,
     alignedP50: null as number | null,
     alignedP95: null as number | null,
@@ -245,6 +247,7 @@ function EngineeringPanel() {
         seconds = (now - started) / 1000;
       const flushes = stats.flushes - previous.flushes,
         samples = stats.samples - previous.samples;
+      pruneLatencySamples();
       setMetrics({
         events: (stats.events - previous.events) / seconds,
         flushes: flushes / seconds,
@@ -258,6 +261,10 @@ function EngineeringPanel() {
         browserQueue: percentile(clientStages.browserQueue ?? [], 0.95),
         render: percentile(clientStages.render ?? [], 0.95),
         socketTransport: percentile(clientStages.socketTransport ?? [], 0.95),
+        rawSocketTransport: percentile(
+          clientStages.rawSocketTransport ?? [],
+          0.95,
+        ),
         coalesced: (stats.coalesced - previous.coalesced) / seconds,
         alignedP50:
           serverAlignedNow() === null
@@ -285,6 +292,8 @@ function EngineeringPanel() {
     };
   }, []);
   const labels: Record<string, string> = {
+    rawSocketTransport:
+      "Raw server send to browser receipt P95 ms (clock-sensitive)",
     alignedP50: "Clock-aligned event to UI P50 ms",
     alignedP95: "Clock-aligned event to UI P95 ms",
     alignedP99: "Clock-aligned event to UI P99 ms",
@@ -299,9 +308,9 @@ function EngineeringPanel() {
     p50: "Raw event to UI P50 ms",
     p95: "Raw event to UI P95 ms",
     p99: "Raw event to UI P99 ms",
-    browserQueue: "Browser queue P95 ms",
+    browserQueue: "Receipt to rAF flush P95 ms (browser clock)",
     render: "Flush to commit P95 ms",
-    socketTransport: "Socket transport P95 ms",
+    socketTransport: "Clock-aligned server send to receipt P95 ms",
     coalesced: "Coalesced events/s",
     simulatorRate: "Simulator target events/s",
     inventoryRate: "Inventory completed/s",
@@ -320,49 +329,126 @@ function EngineeringPanel() {
     clients: "Socket clients",
     cache: "Fallback cache hits %",
   };
+  const all = {
+    ...metrics,
+    ...(backend ?? {
+      kafka: null,
+      lag: null,
+      pricing: null,
+      websocket: null,
+      processed: null,
+      duplicate: null,
+      failed: null,
+      dlq: null,
+      clients: null,
+      cache: null,
+    }),
+  };
+  const group = (key: string) =>
+    key.startsWith("partition ")
+      ? "Partitions"
+      : key.startsWith("database") || key.startsWith("redis") || key === "cache"
+        ? "Database / Redis"
+        : key.startsWith("websocket") ||
+            [
+              "websocket",
+              "socketFailures",
+              "disconnected",
+              "clients",
+              "socketTransport",
+              "rawSocketTransport",
+            ].includes(key)
+          ? "WebSocket"
+          : key.startsWith("kafka") ||
+              key.includes("consumer") ||
+              ["lag", "producedRate", "simulatorRate"].includes(key)
+            ? "Kafka"
+            : key.startsWith("aligned") ||
+                [
+                  "p50",
+                  "p95",
+                  "p99",
+                  "clockOffset",
+                  "clockUncertainty",
+                ].includes(key)
+              ? "End-to-end latency"
+              : Object.keys(metrics).includes(key)
+                ? "Browser / rendering"
+                : "Backend processing";
   return (
     <section className="engineering" aria-label="Engineering metrics">
       <div>
         <p className="eyebrow">UNDER THE HOOD</p>
         <h2>Pipeline and rendering, measured.</h2>
-        <p>Browser: 1s · backend: 2s · P50/P95/P99: latest 512 commits</p>
+        <p>
+          Browser: 1s · backend: 2s · browser samples: latest 512 within 30
+          seconds
+        </p>
         <p>
           Event latency needs synchronized clocks; coalesced events are not
           render samples. Clock-aligned gauges use an HTTP midpoint estimate;
           RTT/2 shows its timing uncertainty.
         </p>
       </div>
-      <dl>
-        {Object.entries({
-          ...metrics,
-          ...(backend ?? {
-            kafka: null,
-            lag: null,
-            pricing: null,
-            websocket: null,
-            processed: null,
-            duplicate: null,
-            failed: null,
-            dlq: null,
-            clients: null,
-            cache: null,
-          }),
-        }).map(([key, value]) => (
-          <div key={key}>
-            <dt>
-              {labels[key] ??
-                (key.startsWith("partition ")
-                  ? key
-                  : key.replace(/(50|95|99)$/, " P$1 ms"))}
-            </dt>
-            <dd data-metric={key}>
-              {typeof value === "number" && Number.isFinite(value)
-                ? value.toFixed(1)
-                : "N/A"}
-            </dd>
-          </div>
+      <div className="engineering-details">
+        <h3>System health summary</h3>
+        <dl className="health-grid">
+          {[
+            ["Kafka lag", backend?.lag],
+            ["Processing events/s", backend?.processedRate],
+            ["Database batch P95 ms", backend?.database_batch95],
+            ["WebSocket send P95 ms", backend?.websocket_send95],
+            ["UI flush to commit P95 ms", metrics.render],
+            ["Clock-aligned E2E P95 ms", metrics.alignedP95],
+            ["Failed attempts", backend?.failed],
+            ["Dead-letter records", backend?.dlq],
+          ].map(([label, v]) => (
+            <div key={String(label)}>
+              <dt>{label}</dt>
+              <dd>{typeof v === "number" ? v.toFixed(1) : "N/A"}</dd>
+            </div>
+          ))}
+        </dl>
+        <p>
+          Queue timing measures receipt to the animation-frame flush with
+          performance.now(). Background tabs or main-thread stalls can
+          legitimately delay it. Browser windows expire after 30 seconds and
+          reset on reconnect or render-mode change; backend stage windows are
+          independent.
+        </p>
+        {[
+          "Kafka",
+          "Backend processing",
+          "Database / Redis",
+          "WebSocket",
+          "Browser / rendering",
+          "End-to-end latency",
+          "Partitions",
+        ].map((section) => (
+          <section key={section}>
+            <h3>{section}</h3>
+            <dl>
+              {Object.entries(all)
+                .filter(([key]) => group(key) === section)
+                .map(([key, value]) => (
+                  <div key={key}>
+                    <dt>
+                      {labels[key] ??
+                        (key.startsWith("partition ")
+                          ? key
+                          : key.replace(/(50|95|99)$/, " P$1 ms"))}
+                    </dt>
+                    <dd data-metric={key}>
+                      {typeof value === "number" && Number.isFinite(value)
+                        ? value.toFixed(1)
+                        : "N/A"}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+          </section>
         ))}
-      </dl>
+      </div>
     </section>
   );
 }

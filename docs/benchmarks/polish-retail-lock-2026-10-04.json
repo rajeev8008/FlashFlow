@@ -1,0 +1,213 @@
+{
+  "status": "passed",
+  "scenario_id": "bd774004-b6a5-4f2b-9f78-cfd37f297e68",
+  "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+  "completed_scenario": {
+    "scenario_id": "bd774004-b6a5-4f2b-9f78-cfd37f297e68",
+    "kind": "FLASH_SALE",
+    "seed": 42,
+    "started_at": "2026-10-04T03:44:13.426784+00:00",
+    "ended_at": "2026-10-04T03:45:16.118291+00:00",
+    "status": "COMPLETED",
+    "data": {
+      "kind": "FLASH_SALE",
+      "product_ids": [
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+      ],
+      "seed": 42,
+      "bins": 12,
+      "strength": 6.0,
+      "restock_quantity": 50,
+      "demo_start_stock": null,
+      "plans": {
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+          1,
+          1,
+          3,
+          1,
+          2,
+          6,
+          7,
+          13,
+          4,
+          9,
+          10,
+          10
+        ]
+      },
+      "tick": 12,
+      "attempted": 67,
+      "fulfilled": 67,
+      "censored": 0,
+      "simulated_minutes": 60,
+      "last_tick_at": "2026-10-04T03:45:16.103421+00:00"
+    }
+  },
+  "executed_recommendation": {
+    "recommendation_id": "72452546-1ca3-4d86-9387-317df81019fe",
+    "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+    "forecast_id": "093374e8-ee2e-581e-a1bc-f2da48216328",
+    "quantity": 30,
+    "reason": "ceil(upper 23.1 + safety stock 10 - available 4), clamped to 0\u2013500.",
+    "risk": "HIGH",
+    "status": "EXECUTED",
+    "created_at": "2026-10-04T03:44:57.187615+00:00",
+    "updated_at": "2026-10-04T03:44:58.768820+00:00",
+    "event_id": "393f9697-6f24-420f-a95e-1205decec343",
+    "published": true,
+    "operator": "Local demo operator",
+    "decision_note": "Integration approved Kafka restock",
+    "decision": "APPROVE",
+    "decided_at": "2026-10-04T03:44:58.270839+00:00",
+    "published_at": "2026-10-04T03:44:58.538964+00:00",
+    "executed_at": "2026-10-04T03:44:58.768820+00:00",
+    "product_name": "Studio headphones",
+    "forecast_data": {
+      "expected_sales": 9.11,
+      "lower_bound": 0.0,
+      "upper_bound": 23.1,
+      "model_version": "hgbr-76457dadb4af",
+      "fallback": false,
+      "interval_method": "90% validation absolute-residual band",
+      "horizon_minutes": 60,
+      "risk_level": "HIGH",
+      "estimated_stockout_minutes": 26.3,
+      "recommended_quantity": 30,
+      "target": "observed completed sales; stock-constrained, not latent demand",
+      "safety_stock": 10,
+      "max_restock": 500,
+      "risk_reason": "4 available; expected 9.11, upper band 23.1 over 60 simulated minutes.",
+      "recommendation_reason": "ceil(upper 23.1 + safety stock 10 - available 4), clamped to 0\u2013500.",
+      "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+      "available_stock": 4,
+      "feature_age_seconds": 0.266743,
+      "features": [
+        13,
+        7,
+        6,
+        8.666666666666666,
+        2.8333333333333335,
+        3.8042374035044424,
+        7,
+        4,
+        1.1,
+        0.7223639620597556,
+        -0.6915130557822693,
+        1
+      ],
+      "feature_schema": "causal-5min-v1",
+      "simulated_clock_scale": 60,
+      "horizon_real_seconds": 60,
+      "bucket_seconds": 5,
+      "input_end": "2026-10-04T03:44:55+00:00",
+      "target_start": "2026-10-04T03:45:00+00:00",
+      "issued_at": "2026-10-04T03:44:57.187615+00:00"
+    }
+  },
+  "analyst_mode": "Evidence-only \u00b7 no LLM configured",
+  "latest_forecast": {
+    "expected_sales": 18.16,
+    "lower_bound": 4.17,
+    "upper_bound": 32.14,
+    "model_version": "hgbr-76457dadb4af",
+    "fallback": false,
+    "interval_method": "90% validation absolute-residual band",
+    "horizon_minutes": 60,
+    "risk_level": "HIGH",
+    "estimated_stockout_minutes": 56.2,
+    "recommended_quantity": 26,
+    "target": "observed completed sales; stock-constrained, not latent demand",
+    "safety_stock": 10,
+    "max_restock": 500,
+    "risk_reason": "17 available; expected 18.16, upper band 32.14 over 60 simulated minutes.",
+    "recommendation_reason": "ceil(upper 32.14 + safety stock 10 - available 17), clamped to 0\u2013500.",
+    "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+    "available_stock": 17,
+    "feature_age_seconds": 0.321836,
+    "features": [
+      6,
+      2,
+      0,
+      2.6666666666666665,
+      1.1666666666666667,
+      1.7240134054647667,
+      6,
+      17,
+      1.1,
+      0.7518398074789774,
+      -0.6593458151000688,
+      1
+    ],
+    "feature_schema": "causal-5min-v1",
+    "simulated_clock_scale": 60,
+    "horizon_real_seconds": 60,
+    "bucket_seconds": 5,
+    "input_end": "2026-10-04T03:44:45+00:00",
+    "target_start": "2026-10-04T03:44:50+00:00",
+    "issued_at": "2026-10-04T03:44:47.036984+00:00"
+  },
+  "additional_scenarios": [
+    {
+      "scenario_id": "f4a512bd-ce0b-4e3c-a701-4689a848b0cf",
+      "kind": "NORMAL",
+      "seed": 77,
+      "started_at": "2026-10-04T03:45:17.671525+00:00",
+      "ended_at": "2026-10-04T03:45:18.108599+00:00",
+      "status": "COMPLETED",
+      "data": {
+        "kind": "NORMAL",
+        "product_ids": [
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+        ],
+        "seed": 77,
+        "bins": 1,
+        "strength": 6.0,
+        "restock_quantity": 50,
+        "demo_start_stock": null,
+        "plans": {
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+            2
+          ]
+        },
+        "tick": 1,
+        "attempted": 2,
+        "fulfilled": 2,
+        "censored": 0,
+        "simulated_minutes": 5,
+        "last_tick_at": "2026-10-04T03:45:18.055064+00:00"
+      }
+    },
+    {
+      "scenario_id": "85478fa7-f86d-4e09-8c40-bf36b0f564e7",
+      "kind": "DEMAND_SPIKE",
+      "seed": 77,
+      "started_at": "2026-10-04T03:45:18.728291+00:00",
+      "ended_at": "2026-10-04T03:45:29.642650+00:00",
+      "status": "COMPLETED",
+      "data": {
+        "kind": "DEMAND_SPIKE",
+        "product_ids": [
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+        ],
+        "seed": 77,
+        "bins": 3,
+        "strength": 6.0,
+        "restock_quantity": 50,
+        "demo_start_stock": null,
+        "plans": {
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+            2,
+            5,
+            3
+          ]
+        },
+        "tick": 3,
+        "attempted": 10,
+        "fulfilled": 10,
+        "censored": 0,
+        "simulated_minutes": 15,
+        "last_tick_at": "2026-10-04T03:45:29.624743+00:00"
+      }
+    }
+  ]
+}

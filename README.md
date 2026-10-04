@@ -6,6 +6,8 @@ The home page has Operations, Products, Recommendations and AI Analyst views. Th
 
 Upgrade documentation: [implementation and measured results](docs/ai-retail-report.md), [ML experiment and reproduction](docs/ml-experiment.md), [demo and 22 interview questions](docs/ai-demo-and-interview.md). The Analyst defaults to **evidence-only mode**, with no external AI call or API key required.
 
+Final polish: [presentation, recommendation policy, latency investigation and exact demo commands](docs/final-polish.md).
+
 Current throughput work: [pipeline timing and correctness](docs/pipeline-timing.md), [performance report](docs/throughput-report.md).
 
 Engineering evidence and walkthroughs: [architecture and failure flows](docs/architecture.md), [measurement methodology and results](docs/performance.md), [demo and interview guide](docs/demo-and-interview.md). Raw measurements live in `docs/benchmarks/`.
@@ -229,7 +231,7 @@ The circuit and fault state are process-local and reset on API restart. Probes a
 
 Inventory failure/Redis failure are application-boundary simulations, not container destruction. Inventory-read failure does not stop PostgreSQL event writes. A paused or Redis-blocked consumer can process one already-in-flight update. Keep consumer pauses short (below Kafka's five-minute max poll interval); prolonged group rebalances may require restarting the API consumer, with idempotent replay protecting stock. Kafka broker interruption is not implemented as a chaos action. Startup/terminal Kafka consumer failures still need an API restart; dependency failures during record processing retry automatically. These boundaries are visible rather than disguised as production failover.
 
-The retained store and recovery metadata now carry independent inventory and price revisions. Optional ML remains deferred.
+The retained store and recovery metadata now carry independent inventory and price revisions. Demand forecasting now runs in the separate advisory worker; pricing remains rule-based.
 
 ## Demand-based pricing
 

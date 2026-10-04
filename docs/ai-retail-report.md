@@ -1,6 +1,6 @@
 # FlashFlow retail and AI implementation report
 
-Local implementation, October 3, 2026. All sales data is simulated. No remote CI, production deployment, real retail accuracy or live LLM result is claimed. The Analyst is deliberately configured in evidence-only mode, following the selected scope.
+Historical upgrade evidence, October 3, 2026. The subsequent [October 4 polish report](final-polish.md) records current presentation, suppression policy, latency fixes and new verification. All sales data is simulated. No remote CI, production deployment, real retail accuracy or live LLM result is claimed. The Analyst is deliberately configured in evidence-only mode, following the selected scope.
 
 ## A. What was built
 
@@ -130,7 +130,7 @@ Executed locally on the final implementation: **40 backend unit tests, 10 fronte
 
 Live phase-two inventory, pricing, pipeline, restart and resilience probes passed. The retail integration passed a twelve-bin flash sale, normal/spike/restock scenarios, approval/rejection and receipt auditing: [retail evidence](benchmarks/retail-final-integration-2026-10-03.json). The flash run recorded 83 attempts, 60 fulfilled and 23 censored; these counts depend on that run's starting stock and approved restock. A seed reproduces attempts, not fulfillment under a different stock history.
 
-The GitHub workflow definitions are updated, but no remote workflow pass or pushed commit is claimed. Results and command scope are recorded in the evidence summary; failed intermediate development checks were repaired before the stated final passes.
+The GitHub workflow definitions were updated with this upgrade; this report records local verification and does not claim a remote workflow pass. The upgrade was subsequently pushed as `08048d5`; the polish report separately states its publishing status. Results and command scope are recorded in the evidence summary; failed intermediate development checks were repaired before the stated final passes.
 
 ## M. Limitations
 

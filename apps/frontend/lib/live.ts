@@ -117,8 +117,16 @@ export const eventArrivals = new Map<string, number>();
 export const observedProducts = new Map<string, Product>();
 export const uiLatencies: number[] = [];
 export const alignedUiLatencies: number[] = [];
-export const clockEstimate = { offsetMs: null as number | null, uncertaintyMs: null as number | null, sampledAt: 0 };
-export function calibrateClock(serverMs: number, sentMs: number, receivedMs: number) {
+export const clockEstimate = {
+  offsetMs: null as number | null,
+  uncertaintyMs: null as number | null,
+  sampledAt: 0,
+};
+export function calibrateClock(
+  serverMs: number,
+  sentMs: number,
+  receivedMs: number,
+) {
   const rtt = receivedMs - sentMs;
   if (!Number.isFinite(serverMs) || rtt < 0 || rtt > 2000) return;
   clockEstimate.offsetMs = serverMs - (sentMs + receivedMs) / 2;
@@ -126,27 +134,69 @@ export function calibrateClock(serverMs: number, sentMs: number, receivedMs: num
   clockEstimate.sampledAt = performance.now();
 }
 export function serverAlignedNow(): number | null {
-  return clockEstimate.offsetMs !== null && performance.now() - clockEstimate.sampledAt < 15000
-    ? Date.now() + clockEstimate.offsetMs : null;
+  return clockEstimate.offsetMs !== null &&
+    performance.now() - clockEstimate.sampledAt < 15000
+    ? Date.now() + clockEstimate.offsetMs
+    : null;
 }
 export function recordAlignedLatency(value: number) {
   if (!Number.isFinite(value) || value < 0) return;
-  alignedUiLatencies.push(value);
-  if (alignedUiLatencies.length > 512) alignedUiLatencies.shift();
+  appendSample(alignedUiLatencies, value);
 }
 export const flushedAt = new Map<string, number>();
 export const clientStages: Record<string, number[]> = {};
+const sampleTimes = new Map<number[], number[]>();
+export function pruneLatencySamples(now = performance.now()) {
+  for (const [values, times] of sampleTimes) {
+    while (times.length && now - times[0] > 30000) {
+      times.shift();
+      values.shift();
+    }
+  }
+}
+function appendSample(values: number[], value: number) {
+  const times = sampleTimes.get(values) ?? [];
+  // External test/benchmark resets must not leave incompatible sample timestamps.
+  if (times.length !== values.length) times.length = 0;
+  sampleTimes.set(values, times);
+  values.push(value);
+  times.push(performance.now());
+  if (values.length > 512) {
+    values.shift();
+    times.shift();
+  }
+  pruneLatencySamples();
+}
+export function resetLatencySamples() {
+  for (const values of [
+    uiLatencies,
+    alignedUiLatencies,
+    ...Object.values(clientStages),
+  ])
+    values.length = 0;
+  sampleTimes.clear();
+  arrivals.clear();
+  eventArrivals.clear();
+  observedProducts.clear();
+  flushedAt.clear();
+  clockEstimate.offsetMs = null;
+  clockEstimate.uncertaintyMs = null;
+  clockEstimate.sampledAt = 0;
+}
 export function recordStage(stage: string, value: number) {
   if (!Number.isFinite(value) || value < 0) return;
   const samples = (clientStages[stage] ??= []);
-  samples.push(value);
-  if (samples.length > 512) samples.shift();
+  appendSample(samples, value);
 }
 function markFlush(products: Product[]) {
   for (const p of products) {
     const now = performance.now();
     const arrival = arrivals.get(p.product_id);
-    if (arrival !== undefined) {
+    if (
+      arrival !== undefined &&
+      observedProducts.get(p.product_id) === p &&
+      isNewer(p, useInventory.getState().productsById[p.product_id])
+    ) {
       recordStage("browserQueue", now - arrival);
       flushedAt.set(p.product_id, now);
     }
@@ -159,8 +209,7 @@ export function percentile(values: number[], fraction: number): number | null {
 }
 export function recordLatency(value: number) {
   if (!Number.isFinite(value) || value < 0) return;
-  uiLatencies.push(value);
-  if (uiLatencies.length > 512) uiLatencies.shift();
+  appendSample(uiLatencies, value);
 }
 export const useInventory = create<{
   productsById: Record<string, Product>;
@@ -260,7 +309,10 @@ export function startLive() {
     cancelAnimationFrame,
   );
   const unsubscribe = useInventory.subscribe((state, previous) => {
-    if (state.mode !== previous.mode) buffer.drain();
+    if (state.mode !== previous.mode) {
+      buffer.drain();
+      resetLatencySamples();
+    }
   });
   const status = (connection: Connection) =>
     useInventory.setState({ connection });
@@ -274,11 +326,12 @@ export function startLive() {
     clearTimeout(openTimeout);
     clearTimeout(snapshotTimer);
     controller?.abort();
+    resetLatencySamples();
     status(generation ? "RECONNECTING" : "CONNECTING");
     const current = ++generation;
     const ws = new WebSocket(
       process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
-      `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:8000/ws`,
+        `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:8000/ws`,
     );
     let lastMessage = performance.now();
     socket = ws;
@@ -361,8 +414,18 @@ export function startLive() {
         }
         const p: Product = message.product;
         stats.events++;
-        if (typeof message.websocket_sent_at === "string")
-          recordStage("socketTransport", Date.now() - Date.parse(message.websocket_sent_at));
+        if (typeof message.websocket_sent_at === "string") {
+          const aligned = serverAlignedNow();
+          if (aligned !== null)
+            recordStage(
+              "socketTransport",
+              aligned - Date.parse(message.websocket_sent_at),
+            );
+          recordStage(
+            "rawSocketTransport",
+            Date.now() - Date.parse(message.websocket_sent_at),
+          );
+        }
         if (!isNewer(p, useInventory.getState().productsById[p.product_id]))
           return;
         const batched = useInventory.getState().mode === "BATCHED";
@@ -420,6 +483,7 @@ export function startLive() {
     controller?.abort();
     socket?.close();
     buffer.stop();
+    resetLatencySamples();
     arrivals.clear();
     eventArrivals.clear();
     flushedAt.clear();

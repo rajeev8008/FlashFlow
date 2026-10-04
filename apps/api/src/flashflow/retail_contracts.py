@@ -32,6 +32,7 @@ class ScenarioRequest(BaseModel):
     bins: int = Field(24, ge=1, le=120)
     strength: float = Field(6, ge=1, le=10)
     restock_quantity: int = Field(50, ge=1, le=500)
+    demo_start_stock: int | None = Field(None, ge=1, le=500)
 
 
 class DecisionRequest(BaseModel):

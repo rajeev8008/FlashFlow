@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     forecast_stale_seconds: int = Field(30, ge=10)
     forecast_safety_stock: int = Field(10, ge=0, le=500)
     forecast_max_restock: int = Field(500, ge=1, le=10000)
+    recommendation_cooldown_seconds: int = Field(120, ge=30, le=3600)
+    recommendation_min_change_units: int = Field(5, ge=1, le=500)
+    recommendation_change_fraction: float = Field(0.25, gt=0, le=1)
     forecast_model_path: str = "/app/artifacts/demand-model.json"
     analyst_base_url: str = "https://api.openai.com/v1"
     analyst_model: str = ""

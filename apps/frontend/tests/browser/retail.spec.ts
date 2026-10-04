@@ -24,6 +24,9 @@ const forecast = {
   interval_method: "validation residual band",
   risk_reason: "24 available; expected 24, upper band 30",
   fallback: false,
+  available_stock: 22,
+  safety_stock: 10,
+  max_restock: 500,
 };
 const recommendation = {
   recommendation_id: id,
@@ -33,6 +36,7 @@ const recommendation = {
   risk: "HIGH",
   status: "PENDING",
   updated_at: new Date().toISOString(),
+  forecast_data: { ...forecast, available_stock: 24 },
 };
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/products", (r) =>
@@ -215,5 +219,119 @@ test("analyst loading and provider failure retain verified evidence", async ({
   );
   await expect(page.locator(".analyst-answer")).toContainText(
     "Forecast unavailable",
+  );
+});
+
+test("polished health, friendly summary and raw evidence remain inspectable", async ({
+  page,
+}) => {
+  await page.route("**/api/retail/model-health", (r) =>
+    r.fulfill({
+      json: {
+        status: "running",
+        model_version: "test-model",
+        forecast_requests: 10,
+        forecast_successes: 8,
+        recent_mae: 44.88,
+        recent_rmse: 44.95,
+        recommendations_by_status: { PENDING: 2 },
+      },
+    }),
+  );
+  await page.route("**/api/retail/analyst", (r) =>
+    r.fulfill({
+      json: {
+        mode: "Evidence-only",
+        answer: "Flash sale summary\n83 purchase attempts were recorded.",
+        retrieved_at: new Date().toISOString(),
+        evidence: [{ tool: "get_scenario_history", data: { attempted: 83 } }],
+      },
+    }),
+  );
+  await page.goto("/?view=analyst");
+  const health = page.getByRole("region", { name: "Model health" });
+  await expect(health).toContainText("80%");
+  await expect(health).toContainText("44.88");
+  await health.getByText("View raw diagnostics", { exact: true }).click();
+  await expect(health.locator("pre")).toContainText('"forecast_requests": 10');
+  await page
+    .getByRole("button", {
+      name: "What happened during the flash sale?",
+      exact: true,
+    })
+    .click();
+  await expect(page.locator(".analyst-answer")).toContainText(
+    "Flash sale summary",
+  );
+  await page.getByText("Verified tool evidence (1)", { exact: true }).click();
+  await expect(page.locator(".analyst-answer pre")).toContainText(
+    "get_scenario_history",
+  );
+});
+test("history filters collapse expired audit rows and show exact restock inputs", async ({
+  page,
+}) => {
+  await page.route("**/api/retail/recommendations", (r) =>
+    r.fulfill({
+      json: [
+        recommendation,
+        { ...recommendation, recommendation_id: "old", status: "EXPIRED" },
+      ],
+    }),
+  );
+  await page.goto("/?view=recommendations");
+  await expect(
+    page.getByText("Active / needs action", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Recommended restock: 16 units", { exact: true }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Forecast upper bound", { exact: true }).first(),
+  ).toBeVisible();
+  await page.getByText("Calculation details", { exact: true }).first().click();
+  await expect(
+    page
+      .getByText("upper 30 + safety 10 - available 24", { exact: true })
+      .first(),
+  ).toBeVisible();
+  await page.getByLabel("Status", { exact: true }).selectOption("EXPIRED");
+  await expect(
+    page.getByText("No matching active recommendations.", { exact: true }),
+  ).toBeVisible();
+  await page.locator(".history-group > summary").click();
+  await expect(page.locator(".history-group")).toContainText("EXPIRED");
+  await page.getByLabel("Risk level", { exact: true }).selectOption("CRITICAL");
+  await expect(
+    page.getByText("No recommendations match these filters.", { exact: true }),
+  ).toBeVisible();
+});
+test("forecast snapshot and live stock are distinct with predicted trend history", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "View product & explanation" })
+    .click();
+  const detail = page.getByRole("region", { name: "Product detail" });
+  await expect(detail).toContainText("Current available stock");
+  await expect(detail).toContainText("Available when forecast generated");
+  await expect(detail).toContainText("22");
+  await expect(detail).toContainText("24");
+  await expect(
+    page.getByRole("img", {
+      name: "Forecast trend: expected sales and prediction bounds",
+    }),
+  ).toBeVisible();
+  await expect(detail).toContainText(
+    "These are forecasts, not observed sales.",
+  );
+  await page
+    .getByRole("button", { name: "Show full retrieved history" })
+    .click();
+  await expect(detail).toContainText("test-model");
+  await detail.getByText("Forecast audit information", { exact: true }).click();
+  await expect(detail.locator("pre").last()).toContainText(
+    '"available_stock": 22',
   );
 });

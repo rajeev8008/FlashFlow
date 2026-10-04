@@ -27,7 +27,7 @@ def request(path, body=None, token=TOKEN):
         return json.load(r)
 
 
-def until(fn, timeout=100):
+def until(fn, timeout=180):
     start = time.monotonic()
     while time.monotonic() - start < timeout:
         value = fn()

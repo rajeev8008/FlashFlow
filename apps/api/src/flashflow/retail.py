@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 
 from .config import settings
 from .database import Session
@@ -173,7 +173,7 @@ async def product_detail(product_id: UUID):
                 select(ForecastRow)
                 .where(ForecastRow.product_id == pid)
                 .order_by(ForecastRow.generated_at.desc())
-                .limit(20)
+                .limit(120)
             )
         ).all()
         prices = (
@@ -214,15 +214,27 @@ async def product_detail(product_id: UUID):
 @router.get("/recommendations")
 async def recommendations():
     async with Session() as session:
-        return [
-            row_dict(r)
-            for r in (
-                await session.scalars(
-                    select(RecommendationRow)
-                    .order_by(RecommendationRow.created_at.desc())
-                    .limit(100)
+        rows = (
+            await session.execute(
+                select(RecommendationRow, ProductRow.name, ForecastRow.data)
+                .join(ProductRow, ProductRow.product_id == RecommendationRow.product_id)
+                .outerjoin(
+                    ForecastRow,
+                    ForecastRow.forecast_id == RecommendationRow.forecast_id,
                 )
-            ).all()
+                .order_by(
+                    case(
+                        (RecommendationRow.status.in_(["PENDING", "ACCEPTED"]), 0),
+                        else_=1,
+                    ),
+                    RecommendationRow.created_at.desc(),
+                )
+                .limit(100)
+            )
+        ).all()
+        return [
+            {**row_dict(r), "product_name": name, "forecast_data": data}
+            for r, name, data in rows
         ]
 
 

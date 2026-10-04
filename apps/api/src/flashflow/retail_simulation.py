@@ -33,9 +33,12 @@ def scenario_plan(seed, kind, bins, strength=4, popularity=1.2, start_minute=600
             rng,
             start_minute + i * 5,
             popularity,
-            kind=kind,
+            # Flash demonstrations include an observed normal warm-up, then a ramp.
+            kind="NORMAL" if kind == "FLASH_SALE" and i < bins // 3 else kind,
             strength=strength,
-            progress=i / max(1, bins - 1),
+            progress=max(0, i - bins // 3) / max(1, bins - bins // 3 - 1)
+            if kind == "FLASH_SALE"
+            else i / max(1, bins - 1),
         )
         for i in range(bins)
     ]

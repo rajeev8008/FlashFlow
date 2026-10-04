@@ -1,0 +1,82 @@
+{
+  "final_approval_source": "polish-retail-lock-2026-10-04.json",
+  "tests": {
+    "total": 74,
+    "browser_skipped": 0,
+    "browser": 13,
+    "backend": 46,
+    "frontend": 15
+  },
+  "browser_source": "browser-1791085205678.json",
+  "source_sha256": {
+    "README.md": "852D6647CD15A9514E56ACC9F25199BBC8CC2DF8C89F6F4CC5AE25E2F6F28272",
+    ".env.example": "EA07ECB3B0C4034706FDD8D18D565FBED599DB95ACE5F36C46961E7CC6EBE8A7",
+    "apps/frontend/lib/retail-presentation.ts": "B6135D7007755668E376A57AE69A6210C2BD7CF858406D3555A404C60D0FC086",
+    "apps/frontend/app/retail.css": "09795DFC89894D94AC5935B33F3661BCAB1EB5F2F7424BF758D6C20C14B04DCA",
+    "apps/api/src/flashflow/recommendation_policy.py": "D9876950E26358AA9CA40DEE8BFF628D938045E51E29E1F33DF738F8DB95A81D",
+    "apps/api/tests/integration_retail.py": "B892EFA25343A86EB72B7881E6CDA56AE070F2B23747B4B2FA65C042759A4DA1",
+    "apps/frontend/lib/live.ts": "2F98FE891FB20FAE705AEDF68E79A7471823BAEAD8A99FB86D34BD53FAE2B0B8",
+    "apps/frontend/app/engineering/page.tsx": "2CAAD2401E1B6D94139F16D512E865746FABB792E8216644A125D1A28322EA6B",
+    "apps/frontend/scripts/live-benchmark.mjs": "C8E902AB585B849F879E9AE2285C74765658AEA807DBA1B7A2BCB8C4F3E9DFFA",
+    "apps/frontend/tests/live.test.ts": "E8D42A5EA08063048265B9CB0291948D36ED0C8F8E7679469DFEB075F3A6C2F3",
+    "apps/api/tests/integration_polish.py": "83328F6B86FF84269871CDFC96BCF0E5754DEA76D4DAEBF4B51F6379085F9218",
+    "apps/api/src/flashflow/scenario_worker.py": "8A96757284155A66C4299E2D7AD3F97376A6FE04399861F58205D71F14E50F9A",
+    "apps/frontend/app/model-health.tsx": "247E6B8D8310F4F6525FA189B9A95AB5DE9717A006B1C4DC8DE70940046A6595",
+    "apps/frontend/app/retail-charts.tsx": "390646F33C5923921D400A0A3FA273862F76938EABD4C19EB2DFCB13C576135A",
+    "apps/frontend/package.json": "036CE43EEB78E378ADF258A0DEA547E24F296D45DCCDFBF33325F20DDFAD86FD",
+    "apps/api/src/flashflow/retail.py": "E653AEB8F3BC1669E3967B5BDB9C576E228090457C0DF740C6E723AE78D1FE05",
+    "apps/api/src/flashflow/analyst.py": "5D1A13BAAA1A8EAB07F6C23BBB5A5A7941494309DBB40E662BDA0417E733F66A",
+    "apps/frontend/tests/retail-presentation.test.ts": "07E353EB09C98490D893F1B3EBEB508573E75F6D2916779E8ACB993F280FD8C2",
+    "apps/api/src/flashflow/retail_contracts.py": "2CA9D70CBE0E459E2B1944CE6E54DA072CDF01E5C3988CFBBBB400CA58A6737F",
+    "apps/frontend/tests/browser/retail.spec.ts": "C7F3DB67AEA8A4691A841FA458B686671F8FD33F3BC84A532944134BB8BB3147",
+    "docs/ai-retail-report.md": "33F1C49216DDB7AB8515351D02EE0115F8AFCA29672109CC63745A267341B0FC",
+    "apps/api/tests/test_polish.py": "6E89BDEBF86BC05746FAA78312FBA3754457F714C7C70609AE73A63CA00AF51C",
+    "apps/api/src/flashflow/forecasting.py": "EB7AB036D0834EC1CB7CB124610710A59F6C6BB5466E8A5D862C3D5E0D4FA3CD",
+    "docs/architecture.md": "0E00A594976991E321FA7348C7F81CD995548D0EC335F2EEADF3A9158A4592BD",
+    "apps/api/src/flashflow/forecast_worker.py": "F6AE926E4D73560DCA73A4D1A67104F91ACE7689B37ECC6BB9E3ED6CD10843EF",
+    "docs/ai-demo-and-interview.md": "EAFCAE070D473217FCC9906E96126CBFEC0C171B63D69981D54E80945F95DA66",
+    "apps/api/src/flashflow/config.py": "9F4786742FC5D8E787BD713E88756979361E81A720973B09E97FC4B61B6F1425",
+    "apps/frontend/app/retail-page.tsx": "04BC22168C9726B12D5968D133339FD3DF7BAD92FBC3787DED334DD2E3EA3777",
+    "apps/api/src/flashflow/analyst_presentation.py": "4075431754DD15A6E814EF69ABE5EA4BF40C744858D4DA7F0E9BD6C4AB8AADE9",
+    "apps/api/src/flashflow/retail_simulation.py": "22B25A43F4C52221575FD4E1019309C92D1AFD528B3317DCE76973C2C6B7EBBE"
+  },
+  "model_retrained": false,
+  "pipeline": {
+    "actual_rate": 499.8041371560431,
+    "errors": [],
+    "final_lag": 0,
+    "event_to_client_ms": {
+      "p50": 604.967,
+      "p95": 2469.684,
+      "p99": 3356.7200000000003
+    },
+    "completed_rate_including_drain": 483.3902507395654,
+    "source": "polish-pipeline-2026-10-04.json",
+    "drain_seconds": 2.0375329320013407,
+    "maximum_lag": 1417,
+    "produced": 29991,
+    "drained": true,
+    "counter_deltas": {
+      "dlq": 0,
+      "failed_socket_sends": 0,
+      "failed": 0,
+      "slow_client_disconnects": 0
+    }
+  },
+  "demo_source": "polish-demo-2026-10-04.json",
+  "recorded_at": "2026-10-04T03:49:22.9532490Z",
+  "local_only": true,
+  "checks": [
+    "TypeScript",
+    "frontend production build",
+    "fatal Python lint",
+    "git diff --check",
+    "inventory and pricing integration",
+    "pipeline integration and restart",
+    "resilience controls Redis fallback circuit recovery pause replay DLQ",
+    "retail four scenarios rejection approval duplicate protection",
+    "final row-lock retail rerun",
+    "polish demo stock risk and Kafka recovery"
+  ],
+  "queue_diagnosis": "Browser monotonic formula valid; stale sample retention and superseded receipt metadata fixed; exact original twelve-second cause unproven without original trace"
+}

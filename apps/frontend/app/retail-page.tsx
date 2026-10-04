@@ -2,6 +2,19 @@
 import { useEffect, useState, memo } from "react";
 import { Product, startLive, useInventory } from "../lib/live";
 import "./retail.css";
+import { ModelHealthCard } from "./model-health";
+import {
+  Chart,
+  ForecastTrend,
+  RecommendationExplanation,
+  Bucket,
+} from "./retail-charts";
+import {
+  number,
+  timestamp,
+  filterAdvice,
+  activeAdvice,
+} from "../lib/retail-presentation";
 type Forecast = {
   forecast_id: string;
   generated_at: string;
@@ -14,6 +27,10 @@ type Forecast = {
   interval_method: string;
   risk_reason: string;
   fallback: boolean;
+  available_stock?: number;
+  safety_stock?: number;
+  max_restock?: number;
+  features?: number[];
 };
 type Recommendation = {
   recommendation_id: string;
@@ -25,6 +42,13 @@ type Recommendation = {
   updated_at: string;
   operator?: string;
   decision_note?: string;
+  forecast_data?: Forecast;
+  product_name?: string;
+  created_at?: string;
+  decided_at?: string;
+  published_at?: string;
+  executed_at?: string;
+  event_id?: string;
 };
 type Item = {
   product: Product;
@@ -40,7 +64,6 @@ type Overview = {
   controls_enabled: boolean;
   clock: { horizon_real_seconds: number };
 };
-type Bucket = { bucket: number; sales: number; stock: number; price: number };
 type PriceDecision = {
   previous_price: string;
   applied_price: string;
@@ -55,6 +78,8 @@ type Detail = {
     data: Forecast;
     generated_at: string;
     actual_sales: number | null;
+    forecast_id?: string;
+    target_end?: string;
   }[];
   pricing_decisions: PriceDecision[];
   history_note: string;
@@ -120,11 +145,11 @@ const RetailCard = memo(function RetailCard({
       <p className="retail-price">{money(p.current_price)}</p>
       <dl className="retail-facts">
         <div>
-          <dt>Available stock</dt>
+          <dt>Current available stock</dt>
           <dd>{p.stock - p.reserved_stock}</dd>
         </div>
         <div>
-          <dt>Next simulated hour</dt>
+          <dt>Prediction range · next simulated hour</dt>
           <dd>
             {f
               ? `${Math.round(f.lower_bound)}–${Math.ceil(f.upper_bound)} units`
@@ -132,19 +157,42 @@ const RetailCard = memo(function RetailCard({
           </dd>
         </div>
         <div>
+          <dt>Expected next-hour sales</dt>
+          <dd>{number(f?.expected_sales)} units</dd>
+        </div>
+        <div>
           <dt>Estimated stockout</dt>
           <dd>
             {f?.estimated_stockout_minutes != null
-              ? `~${f.estimated_stockout_minutes} sim min`
+              ? `~${number(f.estimated_stockout_minutes)} sim min`
               : "Not estimated"}
           </dd>
         </div>
       </dl>
+      <details className="forecast-snapshot">
+        <summary>Forecast snapshot</summary>
+        <p>Available when generated: {number(f?.available_stock, 0)} units</p>
+        <p>
+          Generated: {timestamp(f?.generated_at)} · age{" "}
+          {f
+            ? number(
+                Math.max(0, (Date.now() - Date.parse(f.generated_at)) / 1000),
+              )
+            : "Unavailable"}{" "}
+          real seconds
+        </p>
+      </details>
       <p className="retail-reason">
         {item.stale
           ? "Forecast unavailable or stale. Do not act on old predictions."
           : f?.risk_reason}
       </p>
+      {f?.features && (
+        <p className="action-hint">
+          Recent completed sales: {number(f.features[0], 0)} in the latest bin;{" "}
+          {number(f.features[1], 0)} in the preceding bin.
+        </p>
+      )}
       {item.recommendation && (
         <p className="action-hint">
           Review replenishment +{item.recommendation.quantity} ·{" "}
@@ -157,49 +205,6 @@ const RetailCard = memo(function RetailCard({
     </article>
   );
 });
-function Chart({
-  data,
-  field,
-  label,
-}: {
-  data: Bucket[];
-  field: "sales" | "stock" | "price";
-  label: string;
-}) {
-  if (!data.length) return <p>History is collecting; no observations yet.</p>;
-  const max = Math.max(1, ...data.map((p) => p[field]));
-  const points = data
-    .map(
-      (p, i) =>
-        `${20 + (i / Math.max(1, data.length - 1)) * 560},${145 - (p[field] / max) * 120}`,
-    )
-    .join(" ");
-  return (
-    <figure className="retail-chart">
-      <figcaption>{label} · observed</figcaption>
-      <svg viewBox="0 0 600 170" role="img" aria-label={label}>
-        <line x1="20" y1="145" x2="580" y2="145" stroke="#31453b" />
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#b6ed85"
-          strokeWidth="2.5"
-        />
-        <text x="20" y="165" fill="#aab9af" fontSize="11">
-          {time(new Date(data[0].bucket * 1000).toISOString())}
-        </text>
-        <text x="490" y="165" fill="#aab9af" fontSize="11">
-          {time(new Date(data.at(-1)!.bucket * 1000).toISOString())}
-        </text>
-      </svg>
-      <small>
-        Latest{" "}
-        {field === "price" ? money(data.at(-1)![field]) : data.at(-1)![field]} ·
-        real clock timestamps
-      </small>
-    </figure>
-  );
-}
 export default function RetailHome() {
   const [view, setView] = useState<View>("operations"),
     [data, setData] = useState<Overview | null>(null),
@@ -215,6 +220,13 @@ export default function RetailHome() {
   const [demoProduct, setDemoProduct] = useState(""),
     [seed, setSeed] = useState(42),
     [health, setHealth] = useState<Record<string, unknown> | null>(null);
+  const [recStatus, setRecStatus] = useState(""),
+    [recProduct, setRecProduct] = useState(""),
+    [recRisk, setRecRisk] = useState("");
+  const [fullForecastHistory, setFullForecastHistory] = useState(false);
+  const selectedLive = useInventory((s) =>
+    selected ? s.productsById[selected] : undefined,
+  );
   const connection = useInventory((s) => s.connection);
   useEffect(startLive, []);
   useEffect(() => {
@@ -307,7 +319,8 @@ export default function RetailHome() {
         kind,
         product_ids: [demoProduct],
         seed,
-        bins: 24,
+        bins: kind === "FLASH_SALE" ? 36 : 24,
+        demo_start_stock: kind === "FLASH_SALE" ? 80 : null,
         strength: 6,
         restock_quantity: 50,
       });
@@ -343,13 +356,81 @@ export default function RetailHome() {
     })),
     attention = items.filter(
       (i) =>
-        i.stale ||
-        i.recommendation ||
-        i.recent_price_change ||
-        i.forecast?.risk_level !== "HEALTHY",
+        i.stale || i.recommendation || i.forecast?.risk_level !== "HEALTHY",
     );
   const selectedItem = items.find((i) => i.product.product_id === selected),
-    forecast = selectedItem?.forecast;
+    forecast = detail?.forecasts[0]
+      ? {
+          ...detail.forecasts[0].data,
+          generated_at: detail.forecasts[0].generated_at,
+        }
+      : selectedItem?.forecast;
+  const currentProduct =
+    selectedLive &&
+    detail &&
+    selectedLive.version >= detail.product.version &&
+    (selectedLive.price_version ?? 0) >= (detail.product.price_version ?? 0)
+      ? selectedLive
+      : detail?.product;
+  const filteredRecs = filterAdvice(recs, recStatus, recProduct, recRisk);
+  const activeRecs = filteredRecs.filter((r) => activeAdvice(r)),
+    historyRecs = filteredRecs.filter((r) => !activeAdvice(r));
+  function recommendationCard(r: Recommendation) {
+    return (
+      <article key={r.recommendation_id}>
+        <div className="card-top">
+          <Risk value={r.risk} />
+          <span>
+            {r.status} · {timestamp(r.updated_at)}
+          </span>
+        </div>
+        <h3>
+          {r.product_name ??
+            items.find((i) => i.product.product_id === r.product_id)?.product
+              .name ??
+            r.product_id}
+        </h3>
+        <RecommendationExplanation
+          quantity={r.quantity}
+          reason={r.reason}
+          data={r.forecast_data}
+        />
+        {r.operator && (
+          <p>
+            {r.operator} · {r.decision_note || "No note"}
+          </p>
+        )}
+        <details>
+          <summary>Action audit</summary>
+          <p>
+            Decision: {timestamp(r.decided_at)} · Published:{" "}
+            {timestamp(r.published_at)} · Executed: {timestamp(r.executed_at)}
+          </p>
+          <p>Event ID: {r.event_id ?? "Not published"}</p>
+          <pre>{JSON.stringify(r, null, 2)}</pre>
+        </details>
+        <div className="decision-buttons">
+          <button onClick={() => open(r.product_id)}>Inspect product</button>
+          {r.status === "PENDING" && (
+            <>
+              <button
+                disabled={busy || !data?.controls_enabled}
+                onClick={() => decision(r, "APPROVE")}
+              >
+                Approve restock
+              </button>
+              <button
+                disabled={busy || !data?.controls_enabled}
+                onClick={() => decision(r, "REJECT")}
+              >
+                Reject
+              </button>
+            </>
+          )}
+        </div>
+      </article>
+    );
+  }
   return (
     <main className="retail-main">
       <header>
@@ -510,6 +591,11 @@ export default function RetailHome() {
               {scenarios[0].data.censored}
             </p>
           )}
+          <p>
+            Flash Sale uses 12 normal warm-up bins then 24 ramped demand bins.
+            Preparation tops up the selected simulated product to 80 available
+            units through Kafka; it never removes excess inventory.
+          </p>
           <div className="section-title">
             <div>
               <p className="eyebrow">PRIORITIZED BY BACKEND RISK</p>
@@ -525,6 +611,21 @@ export default function RetailHome() {
               <RetailCard key={i.product.product_id} item={i} open={open} />
             ))}
           </section>
+          <details className="recent-activity">
+            <summary>
+              Recent price activity ({data?.summary.recent_price_changes ?? 0})
+            </summary>
+            <p>Recorded price changes within the last five real minutes.</p>
+            {items
+              .filter((i) => i.recent_price_change)
+              .slice(0, 10)
+              .map((i) => (
+                <p key={i.product.product_id}>
+                  {i.product.name}: {i.product.pricing_reason} ·{" "}
+                  {money(i.product.current_price)}
+                </p>
+              ))}
+          </details>
           {!attention.length && (
             <p className="retail-empty">
               {data
@@ -551,54 +652,91 @@ export default function RetailHome() {
         <section>
           <h2>Recommendations & action history</h2>
           <p>
-            Approval records an audited decision. EXECUTED means a durable
-            inventory receipt confirmed the restock.
+            Approval is audited. EXECUTED confirms the restock has a durable
+            inventory receipt. Similar advice is suppressed between meaningful
+            changes.
+          </p>
+          <div className="history-filters">
+            <label>
+              Status
+              <select
+                aria-label="Status" value={recStatus}
+                onChange={(e) => setRecStatus(e.target.value)}
+              >
+                <option value="">All statuses</option>
+                {[
+                  "PENDING",
+                  "ACCEPTED",
+                  "EXECUTED",
+                  "REJECTED",
+                  "EXPIRED",
+                  "SUPERSEDED",
+                ].map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Product
+              <select
+                aria-label="Product" value={recProduct}
+                onChange={(e) => setRecProduct(e.target.value)}
+              >
+                <option value="">All products</option>
+                {[...new Set(recs.map((r) => r.product_id))].map((id) => (
+                  <option key={id} value={id}>
+                    {items.find((i) => i.product.product_id === id)?.product
+                      .name ??
+                      recs.find((r) => r.product_id === id)?.product_name ??
+                      id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Risk level
+              <select
+                aria-label="Risk level" value={recRisk}
+                onChange={(e) => setRecRisk(e.target.value)}
+              >
+                <option value="">All risks</option>
+                {["CRITICAL", "HIGH", "MEDIUM", "HEALTHY"].map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <h3>Active / needs action</h3>
+          <p>
+            Pending, accepted and executions within the last five real minutes.
           </p>
           <div className="recommendation-list">
-            {recs.map((r) => (
-              <article key={r.recommendation_id}>
-                <div className="card-top">
-                  <Risk value={r.risk} />
-                  <span>
-                    {r.status} · {time(r.updated_at)}
-                  </span>
-                </div>
-                <h3>
-                  {items.find((i) => i.product.product_id === r.product_id)
-                    ?.product.name ?? r.product_id}{" "}
-                  · +{r.quantity} units
-                </h3>
-                <p>{r.reason}</p>
-                {r.operator && (
-                  <small>
-                    {r.operator} · {r.decision_note || "No note"}
-                  </small>
-                )}
-                <div className="decision-buttons">
-                  <button onClick={() => open(r.product_id)}>
-                    Inspect product
-                  </button>
-                  {r.status === "PENDING" && (
-                    <>
-                      <button
-                        disabled={busy || !data?.controls_enabled}
-                        onClick={() => decision(r, "APPROVE")}
-                      >
-                        Approve restock
-                      </button>
-                      <button
-                        disabled={busy || !data?.controls_enabled}
-                        onClick={() => decision(r, "REJECT")}
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
-                </div>
-              </article>
-            ))}
+            {activeRecs.map(recommendationCard)}
           </div>
-          {!recs.length && <p>No recommendations yet.</p>}
+          {!activeRecs.length && <p>No matching active recommendations.</p>}
+          <h3>History</h3>
+          <p>
+            Up to 100 prioritized records returned by the bounded API. Older
+            records remain stored for auditing.
+          </p>
+          {[...new Set(historyRecs.map((r) => r.product_id))].map((id) => (
+            <details className="history-group" key={id}>
+              <summary>
+                {items.find((i) => i.product.product_id === id)?.product.name ??
+                  id}{" "}
+                · {historyRecs.filter((r) => r.product_id === id).length}{" "}
+                historical decisions
+              </summary>
+              <div className="recommendation-list">
+                {historyRecs
+                  .filter((r) => r.product_id === id)
+                  .map(recommendationCard)}
+              </div>
+            </details>
+          ))}
+          {!filteredRecs.length && (
+            <p>No recommendations match these filters.</p>
+          )}
         </section>
       )}
       {selected && view !== "analyst" && (
@@ -613,18 +751,22 @@ export default function RetailHome() {
           </div>
           {detail && (
             <>
+              <p>
+                Current status: {currentProduct!.status.replaceAll("_", " ")} ·
+                inventory updated {timestamp(currentProduct!.last_updated)}
+              </p>
               <div className="retail-summary">
                 <div>
                   <small>Stock / reserved / available</small>
                   <strong>
-                    {detail.product.stock} / {detail.product.reserved_stock} /{" "}
-                    {detail.product.stock - detail.product.reserved_stock}
+                    {currentProduct!.stock} / {currentProduct!.reserved_stock} /{" "}
+                    {currentProduct!.stock - currentProduct!.reserved_stock}
                   </strong>
                 </div>
                 <div>
                   <small>Current / previous price</small>
                   <strong>
-                    {money(detail.product.current_price)} /{" "}
+                    {money(currentProduct!.current_price)} /{" "}
                     {detail.pricing_decisions[0]
                       ? money(detail.pricing_decisions[0].previous_price)
                       : "—"}
@@ -647,6 +789,91 @@ export default function RetailHome() {
                   />
                 </div>
               </div>
+              <h3>Forecast · advisory</h3>
+              <p>
+                Estimated stockout:{" "}
+                {forecast?.estimated_stockout_minutes == null
+                  ? "Not estimated"
+                  : `${number(forecast.estimated_stockout_minutes)} simulated minutes`}{" "}
+                · assumes a constant forecast rate with no inbound stock.
+              </p>
+              <dl className="health-grid">
+                <div>
+                  <dt>Current available stock</dt>
+                  <dd>
+                    {number(
+                      currentProduct!.stock - currentProduct!.reserved_stock,
+                      0,
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Available when forecast generated</dt>
+                  <dd>{number(forecast?.available_stock, 0)}</dd>
+                </div>
+                <div>
+                  <dt>Forecast generated</dt>
+                  <dd>{timestamp(forecast?.generated_at)}</dd>
+                </div>
+                <div>
+                  <dt>Data age</dt>
+                  <dd>
+                    {forecast
+                      ? `${number(Math.max(0, (Date.now() - Date.parse(forecast.generated_at)) / 1000))} real seconds`
+                      : "Unavailable"}
+                  </dd>
+                </div>
+              </dl>
+              <h3>Recommended action</h3>
+              {selectedItem?.recommendation ? (
+                <RecommendationExplanation
+                  quantity={selectedItem.recommendation.quantity}
+                  reason={selectedItem.recommendation.reason}
+                  data={
+                    selectedItem.recommendation.forecast_data ??
+                    detail.forecasts.find(
+                      (f) =>
+                        f.forecast_id ===
+                        (
+                          selectedItem.recommendation as Recommendation & {
+                            forecast_id?: string;
+                          }
+                        ).forecast_id,
+                    )?.data
+                  }
+                />
+              ) : (
+                <p>
+                  No active replenishment recommendation. Check history for
+                  previous decisions.
+                </p>
+              )}
+              {selectedItem?.recommendation?.status === "PENDING" && (
+                <div className="decision-buttons">
+                  <p>
+                    Review +{selectedItem.recommendation.quantity} replenishment
+                  </p>
+                  <button
+                    disabled={
+                      busy || selectedItem.stale || !data?.controls_enabled
+                    }
+                    onClick={() =>
+                      decision(selectedItem.recommendation!, "APPROVE")
+                    }
+                  >
+                    Approve restock
+                  </button>
+                  <button
+                    disabled={busy || !data?.controls_enabled}
+                    onClick={() =>
+                      decision(selectedItem.recommendation!, "REJECT")
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+              <h3>Observed history</h3>
               <div className="detail-charts">
                 <Chart
                   data={detail.history}
@@ -670,7 +897,16 @@ export default function RetailHome() {
                       ? `${Math.round(forecast.lower_bound)}–${Math.ceil(forecast.upper_bound)} units`
                       : "Collecting twelve completed buckets"}
                   </strong>
-                  <p>{forecast?.interval_method}</p>
+                  <p>
+                    Expected sales: {number(forecast?.expected_sales)} units
+                  </p>
+                  <p>
+                    Prediction range reflects uncertainty; it is not guaranteed.
+                  </p>
+                  <details>
+                    <summary>Interval method</summary>
+                    <p>{forecast?.interval_method}</p>
+                  </details>
                   <p>{forecast?.risk_reason}</p>
                   <small>
                     Forecast{" "}
@@ -708,6 +944,20 @@ export default function RetailHome() {
                 </p>
               )}
               <h3>Forecast history</h3>
+              <ForecastTrend rows={detail.forecasts} />
+              <p>
+                Latest{" "}
+                {fullForecastHistory
+                  ? detail.forecasts.length
+                  : Math.min(6, detail.forecasts.length)}{" "}
+                predictions · up to 120 available here; all records remain
+                stored.
+              </p>
+              <button onClick={() => setFullForecastHistory((v) => !v)}>
+                {fullForecastHistory
+                  ? "Show compact history"
+                  : "Show full retrieved history"}
+              </button>
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -720,7 +970,10 @@ export default function RetailHome() {
                     </tr>
                   </thead>
                   <tbody>
-                    {detail.forecasts.map((f, i) => (
+                    {(fullForecastHistory
+                      ? detail.forecasts
+                      : detail.forecasts.slice(0, 6)
+                    ).map((f, i) => (
                       <tr key={i}>
                         <td>{time(f.generated_at)}</td>
                         <td>{f.data.expected_sales}</td>
@@ -734,31 +987,16 @@ export default function RetailHome() {
                   </tbody>
                 </table>
               </div>
-              {selectedItem?.recommendation?.status === "PENDING" && (
-                <div className="decision-buttons">
-                  <p>
-                    Review +{selectedItem.recommendation.quantity} replenishment
-                  </p>
-                  <button
-                    disabled={
-                      busy || selectedItem.stale || !data?.controls_enabled
-                    }
-                    onClick={() =>
-                      decision(selectedItem.recommendation!, "APPROVE")
-                    }
-                  >
-                    Approve restock
-                  </button>
-                  <button
-                    disabled={busy || !data?.controls_enabled}
-                    onClick={() =>
-                      decision(selectedItem.recommendation!, "REJECT")
-                    }
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
+              <details>
+                <summary>Forecast audit information</summary>
+                <pre>
+                  {JSON.stringify(
+                    detail.forecasts[0] ?? { status: "Unavailable" },
+                    null,
+                    2,
+                  )}
+                </pre>
+              </details>
             </>
           )}
         </section>
@@ -829,10 +1067,7 @@ export default function RetailHome() {
               </details>
             </article>
           )}
-          <details>
-            <summary>Model health</summary>
-            <pre>{JSON.stringify(health, null, 2)}</pre>
-          </details>
+          <ModelHealthCard health={health} />
         </section>
       )}
       <footer>

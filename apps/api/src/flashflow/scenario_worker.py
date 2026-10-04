@@ -79,6 +79,36 @@ async def scenario_tick(producer):
         if not scenario:
             return
         data = dict(scenario.data)
+        # Explicit simulated preparation is a real, audited restock, never a DB reset.
+        if data.get("demo_start_stock") and not data.get("prepared"):
+            if "preparation" not in data:
+                data["preparation"] = {}
+                for pid in data["product_ids"]:
+                    p = await session.get(ProductRow, pid)
+                    data["preparation"][pid] = max(
+                        0, data["demo_start_stock"] - (p.stock - p.reserved_stock)
+                    )
+                scenario.data = data
+                await session.commit()
+            done = True
+            for pid, quantity in data["preparation"].items():
+                if quantity:
+                    done = (
+                        await send(
+                            producer,
+                            scenario,
+                            pid,
+                            "preparation:restock",
+                            EventType.INVENTORY_RESTOCKED,
+                            quantity,
+                        )
+                        and done
+                    )
+            if not done:
+                return
+            data["prepared"] = True
+            scenario.data = data
+            await session.commit()
         scenario.status = "RUNNING"
         tick = data["tick"]
         if tick >= data["bins"]:

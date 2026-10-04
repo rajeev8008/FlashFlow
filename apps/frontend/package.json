@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "tsx --test tests/live.test.ts",
+    "test": "tsx --test tests/live.test.ts tests/retail-presentation.test.ts",
     "test:e2e": "playwright test",
     "benchmark": "node scripts/benchmark.mjs",
     "benchmark:live": "node scripts/live-benchmark.mjs"

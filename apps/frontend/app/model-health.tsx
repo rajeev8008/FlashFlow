@@ -1,5 +1,72 @@
 "use client";
 import { useEffect, useState } from "react";
+import { number, timestamp, successRate } from "../lib/retail-presentation";
+export function ModelHealthCard({
+  health,
+}: {
+  health: Record<string, unknown> | null;
+}) {
+  const h = health ?? {},
+    rate = successRate(h),
+    statuses = h.recommendations_by_status as
+      Record<string, number> | undefined;
+  const rows = [
+    ["Status", String(h.status ?? "Loading")],
+    ["Model", String(h.model_version ?? "Unavailable")],
+    [
+      "Feature freshness",
+      typeof h.feature_age_seconds === "number"
+        ? `${number(h.feature_age_seconds)} seconds old`
+        : "Unavailable",
+    ],
+    ["Last forecast", timestamp(h.last_successful_forecast)],
+    ["Forecast requests", number(h.forecast_requests, 0)],
+    [
+      "Forecast success rate",
+      rate === null ? "Unavailable" : `${number(rate)}%`,
+    ],
+    ["Recent MAE", number(h.recent_mae, 2)],
+    ["Recent RMSE", number(h.recent_rmse, 2)],
+    ["Baseline fallbacks", number(h.baseline_fallbacks, 0)],
+  ];
+  return (
+    <section className="model-health" aria-label="Model health">
+      <h2>Model health</h2>
+      <p>
+        Recent errors use matured completed sales. Live performance differs from
+        offline synthetic evaluation.
+      </p>
+      <dl className="health-grid">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <h3>Recommendations</h3>
+      <dl className="health-grid">
+        {[
+          "PENDING",
+          "ACCEPTED",
+          "EXECUTED",
+          "REJECTED",
+          "EXPIRED",
+          "SUPERSEDED",
+        ].map((s) => (
+          <div key={s}>
+            <dt>{s.toLowerCase()}</dt>
+            <dd>{statuses ? number(statuses[s] ?? 0, 0) : "Unavailable"}</dd>
+          </div>
+        ))}
+      </dl>
+      <details>
+        <summary>View raw diagnostics</summary>
+        <pre>{JSON.stringify(health, null, 2)}</pre>
+      </details>
+    </section>
+  );
+}
 export function ModelHealth() {
   const [health, setHealth] = useState<Record<string, unknown> | null>(null);
   useEffect(() => {
@@ -23,16 +90,5 @@ export function ModelHealth() {
       clearInterval(timer);
     };
   }, []);
-  return (
-    <details className="model-health">
-      <summary>
-        Advisory model health · {String(health?.status ?? "loading")}
-      </summary>
-      <p>
-        Independent Kafka observer · 60 simulated minute horizon · recent errors
-        use matured observed sales, not latent demand.
-      </p>
-      <pre>{JSON.stringify(health, null, 2)}</pre>
-    </details>
-  );
+  return <ModelHealthCard health={health} />;
 }

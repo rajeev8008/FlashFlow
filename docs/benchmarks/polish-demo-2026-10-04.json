@@ -1,0 +1,1117 @@
+{
+  "status": "passed",
+  "scenario": {
+    "scenario_id": "f8070b33-68e0-4003-8099-02082632e0c9",
+    "kind": "FLASH_SALE",
+    "seed": 42,
+    "started_at": "2026-10-04T03:24:27.247467+00:00",
+    "ended_at": "2026-10-04T03:27:41.031748+00:00",
+    "status": "COMPLETED",
+    "data": {
+      "kind": "FLASH_SALE",
+      "product_ids": [
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+      ],
+      "seed": 42,
+      "bins": 36,
+      "strength": 6.0,
+      "restock_quantity": 50,
+      "demo_start_stock": 80,
+      "plans": {
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+          1,
+          1,
+          3,
+          1,
+          0,
+          1,
+          0,
+          2,
+          2,
+          2,
+          0,
+          2,
+          8,
+          6,
+          3,
+          5,
+          9,
+          5,
+          9,
+          9,
+          5,
+          8,
+          8,
+          10,
+          0,
+          6,
+          7,
+          8,
+          7,
+          5,
+          6,
+          8,
+          8,
+          6,
+          9,
+          5
+        ]
+      },
+      "tick": 36,
+      "attempted": 175,
+      "fulfilled": 80,
+      "censored": 95,
+      "simulated_minutes": 180,
+      "preparation": {
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": 42
+      },
+      "prepared": true,
+      "last_tick_at": "2026-10-04T03:27:40.770996+00:00"
+    }
+  },
+  "samples": [
+    {
+      "tick": 0,
+      "stock": 38,
+      "risk": "HIGH",
+      "expected_sales": 43.0,
+      "forecast_id": "cea007a4-e057-51b4-8005-ab3d9a73e4ef"
+    },
+    {
+      "tick": 1,
+      "stock": 79,
+      "risk": "HIGH",
+      "expected_sales": 43.0,
+      "forecast_id": "cea007a4-e057-51b4-8005-ab3d9a73e4ef"
+    },
+    {
+      "tick": 1,
+      "stock": 79,
+      "risk": "HEALTHY",
+      "expected_sales": 41.16,
+      "forecast_id": "5a209894-cd75-59a4-868f-b28c0f964860"
+    },
+    {
+      "tick": 2,
+      "stock": 78,
+      "risk": "HEALTHY",
+      "expected_sales": 41.16,
+      "forecast_id": "5a209894-cd75-59a4-868f-b28c0f964860"
+    },
+    {
+      "tick": 2,
+      "stock": 78,
+      "risk": "HEALTHY",
+      "expected_sales": 34.98,
+      "forecast_id": "4ab6043c-0481-5906-bc61-4d2188bb2ddc"
+    },
+    {
+      "tick": 3,
+      "stock": 75,
+      "risk": "HEALTHY",
+      "expected_sales": 34.98,
+      "forecast_id": "4ab6043c-0481-5906-bc61-4d2188bb2ddc"
+    },
+    {
+      "tick": 3,
+      "stock": 75,
+      "risk": "HEALTHY",
+      "expected_sales": 33.48,
+      "forecast_id": "6b1cd104-a536-5532-9293-fd2395beeb94"
+    },
+    {
+      "tick": 4,
+      "stock": 74,
+      "risk": "HEALTHY",
+      "expected_sales": 33.48,
+      "forecast_id": "6b1cd104-a536-5532-9293-fd2395beeb94"
+    },
+    {
+      "tick": 5,
+      "stock": 74,
+      "risk": "HEALTHY",
+      "expected_sales": 25.5,
+      "forecast_id": "94c7cc04-5089-57ad-bda9-c09afdeff9b7"
+    },
+    {
+      "tick": 6,
+      "stock": 73,
+      "risk": "HEALTHY",
+      "expected_sales": 21.04,
+      "forecast_id": "91abc831-bae0-56d2-85c9-b348d1897635"
+    },
+    {
+      "tick": 7,
+      "stock": 73,
+      "risk": "HEALTHY",
+      "expected_sales": 19.41,
+      "forecast_id": "cecbdf1e-44dc-54af-a8d2-959618668886"
+    },
+    {
+      "tick": 8,
+      "stock": 71,
+      "risk": "HEALTHY",
+      "expected_sales": 19.1,
+      "forecast_id": "f4093e81-dcd2-5781-8cdd-3614061649c4"
+    },
+    {
+      "tick": 8,
+      "stock": 71,
+      "risk": "HEALTHY",
+      "expected_sales": 16.63,
+      "forecast_id": "1c5c2b3f-78e1-520c-9c7c-e3c4701cc6c4"
+    },
+    {
+      "tick": 9,
+      "stock": 69,
+      "risk": "HEALTHY",
+      "expected_sales": 16.63,
+      "forecast_id": "1c5c2b3f-78e1-520c-9c7c-e3c4701cc6c4"
+    },
+    {
+      "tick": 10,
+      "stock": 67,
+      "risk": "HEALTHY",
+      "expected_sales": 17.47,
+      "forecast_id": "9f85a410-b98c-509d-9ff2-c21cdd392254"
+    },
+    {
+      "tick": 11,
+      "stock": 67,
+      "risk": "HEALTHY",
+      "expected_sales": 18.6,
+      "forecast_id": "453963fd-9ab8-59d8-861c-1b7a9eb5fd68"
+    },
+    {
+      "tick": 11,
+      "stock": 67,
+      "risk": "HEALTHY",
+      "expected_sales": 17.32,
+      "forecast_id": "b40ae2e5-a428-5013-b66f-b0e27e94535f"
+    },
+    {
+      "tick": 12,
+      "stock": 65,
+      "risk": "HEALTHY",
+      "expected_sales": 17.32,
+      "forecast_id": "b40ae2e5-a428-5013-b66f-b0e27e94535f"
+    },
+    {
+      "tick": 13,
+      "stock": 57,
+      "risk": "HEALTHY",
+      "expected_sales": 18.18,
+      "forecast_id": "38522e3b-88b6-537a-ad2d-88ce4cb1b130"
+    },
+    {
+      "tick": 14,
+      "stock": 51,
+      "risk": "HEALTHY",
+      "expected_sales": 34.4,
+      "forecast_id": "18384499-f14b-5c29-b2dd-6107e7faf5b7"
+    },
+    {
+      "tick": 15,
+      "stock": 48,
+      "risk": "MEDIUM",
+      "expected_sales": 38.4,
+      "forecast_id": "a4da973b-9f17-5bbf-9b05-f1e76dbe83e1"
+    },
+    {
+      "tick": 16,
+      "stock": 43,
+      "risk": "MEDIUM",
+      "expected_sales": 32.55,
+      "forecast_id": "261ac760-0ed5-5d5a-abf4-e95ceff0d8b5"
+    },
+    {
+      "tick": 16,
+      "stock": 43,
+      "risk": "MEDIUM",
+      "expected_sales": 32.22,
+      "forecast_id": "207f6902-712f-500b-815a-b2ca475c7219"
+    },
+    {
+      "tick": 17,
+      "stock": 34,
+      "risk": "MEDIUM",
+      "expected_sales": 32.22,
+      "forecast_id": "207f6902-712f-500b-815a-b2ca475c7219"
+    },
+    {
+      "tick": 17,
+      "stock": 29,
+      "risk": "MEDIUM",
+      "expected_sales": 21.0,
+      "forecast_id": "6998d4b6-e2ff-5d3f-b938-384f41014331"
+    },
+    {
+      "tick": 18,
+      "stock": 29,
+      "risk": "MEDIUM",
+      "expected_sales": 21.0,
+      "forecast_id": "6998d4b6-e2ff-5d3f-b938-384f41014331"
+    },
+    {
+      "tick": 19,
+      "stock": 20,
+      "risk": "MEDIUM",
+      "expected_sales": 24.86,
+      "forecast_id": "d2afda21-13c3-5d11-932a-86a32963d1f9"
+    },
+    {
+      "tick": 20,
+      "stock": 11,
+      "risk": "MEDIUM",
+      "expected_sales": 19.33,
+      "forecast_id": "dd4393e9-3c0a-59e4-99aa-7319cd20b77a"
+    },
+    {
+      "tick": 21,
+      "stock": 6,
+      "risk": "HIGH",
+      "expected_sales": 11.48,
+      "forecast_id": "7cfc2044-c158-5bfa-879f-7225cd617f1c"
+    },
+    {
+      "tick": 21,
+      "stock": 6,
+      "risk": "MEDIUM",
+      "expected_sales": 4.61,
+      "forecast_id": "d1a0ed6c-63ae-5ce0-97b9-d4b3beb9cb88"
+    },
+    {
+      "tick": 22,
+      "stock": 0,
+      "risk": "MEDIUM",
+      "expected_sales": 4.61,
+      "forecast_id": "d1a0ed6c-63ae-5ce0-97b9-d4b3beb9cb88"
+    },
+    {
+      "tick": 22,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 4.21,
+      "forecast_id": "6feda3de-7c43-57b6-b019-08d1e0e4f864"
+    },
+    {
+      "tick": 23,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 4.21,
+      "forecast_id": "6feda3de-7c43-57b6-b019-08d1e0e4f864"
+    },
+    {
+      "tick": 23,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 11.43,
+      "forecast_id": "750a4a34-7097-5e17-938f-8658c3746618"
+    },
+    {
+      "tick": 24,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 11.43,
+      "forecast_id": "750a4a34-7097-5e17-938f-8658c3746618"
+    },
+    {
+      "tick": 25,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 8.72,
+      "forecast_id": "af368e66-a21b-56f1-a9a5-aba71a1b997e"
+    },
+    {
+      "tick": 25,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 12.28,
+      "forecast_id": "97605a76-4f80-52a1-8711-0d79d3a89f5c"
+    },
+    {
+      "tick": 26,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 12.28,
+      "forecast_id": "97605a76-4f80-52a1-8711-0d79d3a89f5c"
+    },
+    {
+      "tick": 27,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 12.28,
+      "forecast_id": "97605a76-4f80-52a1-8711-0d79d3a89f5c"
+    },
+    {
+      "tick": 27,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 18.05,
+      "forecast_id": "266225d1-7f04-53c3-8441-1969f993334a"
+    },
+    {
+      "tick": 28,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 18.05,
+      "forecast_id": "266225d1-7f04-53c3-8441-1969f993334a"
+    },
+    {
+      "tick": 29,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 14.38,
+      "forecast_id": "5ebd50fc-5d8a-5f9e-82fe-ca139aae7250"
+    },
+    {
+      "tick": 29,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 23.02,
+      "forecast_id": "cd92e6a1-ffcf-5484-93e3-bec70f8ce642"
+    },
+    {
+      "tick": 30,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 23.02,
+      "forecast_id": "cd92e6a1-ffcf-5484-93e3-bec70f8ce642"
+    },
+    {
+      "tick": 30,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 15.43,
+      "forecast_id": "560836a2-9c9b-5f55-9296-7bc6227befae"
+    },
+    {
+      "tick": 31,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 15.43,
+      "forecast_id": "560836a2-9c9b-5f55-9296-7bc6227befae"
+    },
+    {
+      "tick": 31,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 16.91,
+      "forecast_id": "e8b35fb1-970a-52ba-91a4-462b1db12e69"
+    },
+    {
+      "tick": 32,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 16.91,
+      "forecast_id": "e8b35fb1-970a-52ba-91a4-462b1db12e69"
+    },
+    {
+      "tick": 32,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 17.38,
+      "forecast_id": "1643e12a-3c68-5495-9172-d86074d3167b"
+    },
+    {
+      "tick": 33,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 17.38,
+      "forecast_id": "1643e12a-3c68-5495-9172-d86074d3167b"
+    },
+    {
+      "tick": 33,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 18.95,
+      "forecast_id": "a979a16b-614c-5157-8004-b908ee28b02d"
+    },
+    {
+      "tick": 34,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 18.95,
+      "forecast_id": "a979a16b-614c-5157-8004-b908ee28b02d"
+    },
+    {
+      "tick": 35,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 18.95,
+      "forecast_id": "f839b671-ed35-5856-965e-177706252a4e"
+    },
+    {
+      "tick": 36,
+      "stock": 0,
+      "risk": "CRITICAL",
+      "expected_sales": 9.21,
+      "forecast_id": "5ba2e718-472e-5638-8ae6-766329df38b1"
+    }
+  ],
+  "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+  "stock_before_approval": 0,
+  "stock_after_execution": 34,
+  "risk_before": "CRITICAL",
+  "risk_after": "HEALTHY",
+  "executed_recommendation": {
+    "recommendation_id": "46543b7e-0e3d-4b23-ac1b-57401690c4fc",
+    "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+    "forecast_id": "5ba2e718-472e-5638-8ae6-766329df38b1",
+    "quantity": 34,
+    "reason": "ceil(upper 23.2 + safety stock 10 - available 0), clamped to 0\u2013500.",
+    "risk": "CRITICAL",
+    "status": "EXECUTED",
+    "created_at": "2026-10-04T03:27:39.956437+00:00",
+    "updated_at": "2026-10-04T03:27:42.722187+00:00",
+    "event_id": "c33ded23-321c-4b57-a3c6-4562049864c0",
+    "published": true,
+    "operator": "Local demo operator",
+    "decision_note": "Final polish real demo verification",
+    "decision": "APPROVE",
+    "decided_at": "2026-10-04T03:27:42.379621+00:00",
+    "published_at": "2026-10-04T03:27:42.492348+00:00",
+    "executed_at": "2026-10-04T03:27:42.722187+00:00"
+  },
+  "attention_explanation": {
+    "mode": "Evidence-only \u00b7 no LLM configured",
+    "answer": "Studio headphones\nCurrent stock: 0 units; reserved: 0 units. Inventory updated: 2026-10-04T03:26:23.458938Z.\nExpected sales: 9.21 units over the next simulated hour.\nPrediction range: 0.0\u201323.2 units. This advisory band is not a guaranteed outcome.\nRisk at forecast time: CRITICAL.\nAvailable when generated: 0 units.\nForecast generated: 2026-10-04T03:27:39.956437+00:00.\nWhy: 0 available; expected 9.21, upper band 23.2 over 60 simulated minutes.\nStudio headphones: recommended restock of 34 units. Status: PENDING. Risk: CRITICAL. Recorded: 2026-10-04T03:27:39.956437+00:00.\nStudio headphones: recommended restock of 43 units. Status: EXPIRED. Risk: CRITICAL. Recorded: 2026-10-04T03:26:54.813749+00:00.\nStudio headphones: recommended restock of 36 units. Status: SUPERSEDED. Risk: CRITICAL. Recorded: 2026-10-04T03:26:32.534361+00:00.\n\nVerified sources and retrieval times\n- product details and stored pricing decisions \u00b7 2026-10-04T03:27:42.274448+00:00",
+    "retrieved_at": "2026-10-04T03:27:42.274684+00:00",
+    "evidence": [
+      {
+        "tool": "get_product_details",
+        "retrieved_at": "2026-10-04T03:27:42.274448Z",
+        "data": {
+          "retrieved_at": "2026-10-04T03:27:42.261907+00:00",
+          "product": {
+            "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+            "name": "Studio headphones",
+            "category": "Retail Demo",
+            "base_price": "129.00",
+            "current_price": "141.90",
+            "stock": 0,
+            "reserved_stock": 0,
+            "sales_velocity": 0.6666666666666666,
+            "status": "SOLD_OUT",
+            "last_updated": "2026-10-04T03:26:23.458938Z",
+            "version": 70,
+            "price_version": 2,
+            "demand_state": "HIGH",
+            "pricing_reason": "High demand target",
+            "price_direction": "UP",
+            "pricing_source": "RULES"
+          },
+          "history": [
+            {
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "bucket": 1791084430,
+              "sales": 0,
+              "stock": 0,
+              "reserved": 0,
+              "price": 141.9
+            },
+            {
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "bucket": 1791084435,
+              "sales": 0,
+              "stock": 0,
+              "reserved": 0,
+              "price": 141.9
+            },
+            {
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "bucket": 1791084440,
+              "sales": 0,
+              "stock": 0,
+              "reserved": 0,
+              "price": 141.9
+            },
+            {
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "bucket": 1791084445,
+              "sales": 0,
+              "stock": 0,
+              "reserved": 0,
+              "price": 141.9
+            },
+            {
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "bucket": 1791084450,
+              "sales": 0,
+              "stock": 0,
+              "reserved": 0,
+              "price": 141.9
+            }
+          ],
+          "forecasts": [
+            {
+              "forecast_id": "5ba2e718-472e-5638-8ae6-766329df38b1",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "generated_at": "2026-10-04T03:27:39.956437+00:00",
+              "target_end": "2026-10-04T03:28:40+00:00",
+              "data": {
+                "expected_sales": 9.21,
+                "lower_bound": 0.0,
+                "upper_bound": 23.2,
+                "model_version": "hgbr-76457dadb4af",
+                "fallback": false,
+                "interval_method": "90% validation absolute-residual band",
+                "horizon_minutes": 60,
+                "risk_level": "CRITICAL",
+                "estimated_stockout_minutes": 0.0,
+                "recommended_quantity": 34,
+                "target": "observed completed sales; stock-constrained, not latent demand",
+                "safety_stock": 10,
+                "max_restock": 500,
+                "risk_reason": "0 available; expected 9.21, upper band 23.2 over 60 simulated minutes.",
+                "recommendation_reason": "ceil(upper 23.2 + safety stock 10 - available 0), clamped to 0\u2013500.",
+                "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+                "available_stock": 0,
+                "feature_age_seconds": 0.354633,
+                "features": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0.0,
+                  0,
+                  0,
+                  1.1,
+                  -0.8064446042674827,
+                  -0.5913096483635822,
+                  1
+                ],
+                "feature_schema": "causal-5min-v1",
+                "simulated_clock_scale": 60,
+                "horizon_real_seconds": 60,
+                "bucket_seconds": 5,
+                "input_end": "2026-10-04T03:27:35+00:00",
+                "target_start": "2026-10-04T03:27:40+00:00",
+                "issued_at": "2026-10-04T03:27:39.956437+00:00"
+              },
+              "actual_sales": null
+            },
+            {
+              "forecast_id": "f839b671-ed35-5856-965e-177706252a4e",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "generated_at": "2026-10-04T03:27:34.478637+00:00",
+              "target_end": "2026-10-04T03:28:35+00:00",
+              "data": {
+                "expected_sales": 18.95,
+                "lower_bound": 4.97,
+                "upper_bound": 32.94,
+                "model_version": "hgbr-76457dadb4af",
+                "fallback": false,
+                "interval_method": "90% validation absolute-residual band",
+                "horizon_minutes": 60,
+                "risk_level": "CRITICAL",
+                "estimated_stockout_minutes": 0.0,
+                "recommended_quantity": 43,
+                "target": "observed completed sales; stock-constrained, not latent demand",
+                "safety_stock": 10,
+                "max_restock": 500,
+                "risk_reason": "0 available; expected 18.95, upper band 32.94 over 60 simulated minutes.",
+                "recommendation_reason": "ceil(upper 32.94 + safety stock 10 - available 0), clamped to 0\u2013500.",
+                "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+                "available_stock": 0,
+                "feature_age_seconds": 0.614549,
+                "features": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0.0,
+                  0,
+                  0,
+                  1.1,
+                  -0.7933533402912349,
+                  -0.6087614290087209,
+                  1
+                ],
+                "feature_schema": "causal-5min-v1",
+                "simulated_clock_scale": 60,
+                "horizon_real_seconds": 60,
+                "bucket_seconds": 5,
+                "input_end": "2026-10-04T03:27:30+00:00",
+                "target_start": "2026-10-04T03:27:35+00:00",
+                "issued_at": "2026-10-04T03:27:34.478637+00:00"
+              },
+              "actual_sales": null
+            },
+            {
+              "forecast_id": "a979a16b-614c-5157-8004-b908ee28b02d",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "generated_at": "2026-10-04T03:27:28.430341+00:00",
+              "target_end": "2026-10-04T03:28:30+00:00",
+              "data": {
+                "expected_sales": 18.95,
+                "lower_bound": 4.97,
+                "upper_bound": 32.94,
+                "model_version": "hgbr-76457dadb4af",
+                "fallback": false,
+                "interval_method": "90% validation absolute-residual band",
+                "horizon_minutes": 60,
+                "risk_level": "CRITICAL",
+                "estimated_stockout_minutes": 0.0,
+                "recommended_quantity": 43,
+                "target": "observed completed sales; stock-constrained, not latent demand",
+                "safety_stock": 10,
+                "max_restock": 500,
+                "risk_reason": "0 available; expected 18.95, upper band 32.94 over 60 simulated minutes.",
+                "recommendation_reason": "ceil(upper 32.94 + safety stock 10 - available 0), clamped to 0\u2013500.",
+                "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+                "available_stock": 0,
+                "feature_age_seconds": 0.596762,
+                "features": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0.0,
+                  0,
+                  0,
+                  1.1,
+                  -0.7798844830928819,
+                  -0.625923472184059,
+                  1
+                ],
+                "feature_schema": "causal-5min-v1",
+                "simulated_clock_scale": 60,
+                "horizon_real_seconds": 60,
+                "bucket_seconds": 5,
+                "input_end": "2026-10-04T03:27:25+00:00",
+                "target_start": "2026-10-04T03:27:30+00:00",
+                "issued_at": "2026-10-04T03:27:28.430341+00:00"
+              },
+              "actual_sales": null
+            },
+            {
+              "forecast_id": "1643e12a-3c68-5495-9172-d86074d3167b",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "generated_at": "2026-10-04T03:27:22.410225+00:00",
+              "target_end": "2026-10-04T03:28:25+00:00",
+              "data": {
+                "expected_sales": 17.38,
+                "lower_bound": 3.4,
+                "upper_bound": 31.37,
+                "model_version": "hgbr-76457dadb4af",
+                "fallback": false,
+                "interval_method": "90% validation absolute-residual band",
+                "horizon_minutes": 60,
+                "risk_level": "CRITICAL",
+                "estimated_stockout_minutes": 0.0,
+                "recommended_quantity": 42,
+                "target": "observed completed sales; stock-constrained, not latent demand",
+                "safety_stock": 10,
+                "max_restock": 500,
+                "risk_reason": "0 available; expected 17.38, upper band 31.37 over 60 simulated minutes.",
+                "recommendation_reason": "ceil(upper 31.37 + safety stock 10 - available 0), clamped to 0\u2013500.",
+                "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+                "available_stock": 0,
+                "feature_age_seconds": 0.593177,
+                "features": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0.5,
+                  1.6583123951777,
+                  0,
+                  0,
+                  1.1,
+                  -0.7660444431189779,
+                  -0.6427876096865395,
+                  1
+                ],
+                "feature_schema": "causal-5min-v1",
+                "simulated_clock_scale": 60,
+                "horizon_real_seconds": 60,
+                "bucket_seconds": 5,
+                "input_end": "2026-10-04T03:27:20+00:00",
+                "target_start": "2026-10-04T03:27:25+00:00",
+                "issued_at": "2026-10-04T03:27:22.410225+00:00"
+              },
+              "actual_sales": null
+            },
+            {
+              "forecast_id": "e8b35fb1-970a-52ba-91a4-462b1db12e69",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "generated_at": "2026-10-04T03:27:16.437985+00:00",
+              "target_end": "2026-10-04T03:28:20+00:00",
+              "data": {
+                "expected_sales": 16.91,
+                "lower_bound": 2.92,
+                "upper_bound": 30.89,
+                "model_version": "hgbr-76457dadb4af",
+                "fallback": false,
+                "interval_method": "90% validation absolute-residual band",
+                "horizon_minutes": 60,
+                "risk_level": "CRITICAL",
+                "estimated_stockout_minutes": 0.0,
+                "recommended_quantity": 41,
+                "target": "observed completed sales; stock-constrained, not latent demand",
+                "safety_stock": 10,
+                "max_restock": 500,
+                "risk_reason": "0 available; expected 16.91, upper band 30.89 over 60 simulated minutes.",
+                "recommendation_reason": "ceil(upper 30.89 + safety stock 10 - available 0), clamped to 0\u2013500.",
+                "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+                "available_stock": 0,
+                "feature_age_seconds": 0.608306,
+                "features": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0.9166666666666666,
+                  2.059867849051379,
+                  0,
+                  0,
+                  1.1,
+                  -0.7518398074789773,
+                  -0.6593458151000691,
+                  1
+                ],
+                "feature_schema": "causal-5min-v1",
+                "simulated_clock_scale": 60,
+                "horizon_real_seconds": 60,
+                "bucket_seconds": 5,
+                "input_end": "2026-10-04T03:27:15+00:00",
+                "target_start": "2026-10-04T03:27:20+00:00",
+                "issued_at": "2026-10-04T03:27:16.437985+00:00"
+              },
+              "actual_sales": null
+            }
+          ],
+          "pricing_decisions": [
+            {
+              "decision_id": "1020f479-e524-57ff-8b72-6b4bb30048b3",
+              "source_event_id": "e2dc5644-c632-5bab-8212-c0c2d5cb6da1",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "inventory_version": 16,
+              "expected_price_version": 1,
+              "previous_price": 135.45,
+              "recommended_price": 141.9,
+              "adjustment_percentage": 4.7619,
+              "signals": {
+                "base_price": "129.00",
+                "stock": 19,
+                "available_ratio": 0.475,
+                "reservation_ratio": 0.0,
+                "sales_velocity": 0.13333333333333333,
+                "event_velocity": 0.06666666666666667,
+                "window_seconds": 30,
+                "observed_seconds": 0.004005,
+                "demand_state": "HIGH"
+              },
+              "reason": "High demand target",
+              "decision_source": "RULES",
+              "status": "APPLIED",
+              "published": true,
+              "created_at": "2026-10-03T15:46:10.626925+00:00",
+              "applied_at": "2026-10-03T15:46:10.655553+00:00",
+              "applied_price": 141.9,
+              "application_reason": null
+            },
+            {
+              "decision_id": "6ab9aeb3-cb79-5c23-b418-46b85763b6fd",
+              "source_event_id": "3cda2ee3-5eb9-51e2-a22d-01a4b9fc7921",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "inventory_version": 3,
+              "expected_price_version": 0,
+              "previous_price": 129.0,
+              "recommended_price": 135.45,
+              "adjustment_percentage": 5.0,
+              "signals": {
+                "base_price": "129.00",
+                "stock": 37,
+                "available_ratio": 0.925,
+                "reservation_ratio": 0.0,
+                "sales_velocity": 0.1,
+                "event_velocity": 0.06666666666666667,
+                "window_seconds": 30,
+                "observed_seconds": 0.007636,
+                "demand_state": "HIGH"
+              },
+              "reason": "High demand target",
+              "decision_source": "RULES",
+              "status": "APPLIED",
+              "published": true,
+              "created_at": "2026-10-03T15:45:38.103090+00:00",
+              "applied_at": "2026-10-03T15:45:38.121582+00:00",
+              "applied_price": 135.45,
+              "application_reason": null
+            }
+          ],
+          "recommendations": [
+            {
+              "recommendation_id": "46543b7e-0e3d-4b23-ac1b-57401690c4fc",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "forecast_id": "5ba2e718-472e-5638-8ae6-766329df38b1",
+              "quantity": 34,
+              "reason": "ceil(upper 23.2 + safety stock 10 - available 0), clamped to 0\u2013500.",
+              "risk": "CRITICAL",
+              "status": "PENDING",
+              "created_at": "2026-10-04T03:27:39.956437+00:00",
+              "updated_at": "2026-10-04T03:27:39.956437+00:00",
+              "event_id": null,
+              "published": false,
+              "operator": null,
+              "decision_note": null,
+              "decision": null,
+              "decided_at": null,
+              "published_at": null,
+              "executed_at": null
+            },
+            {
+              "recommendation_id": "62573969-6300-455e-8e80-a6a7cae7900c",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "forecast_id": "266225d1-7f04-53c3-8441-1969f993334a",
+              "quantity": 43,
+              "reason": "ceil(upper 32.04 + safety stock 10 - available 0), clamped to 0\u2013500.",
+              "risk": "CRITICAL",
+              "status": "EXPIRED",
+              "created_at": "2026-10-04T03:26:54.813749+00:00",
+              "updated_at": "2026-10-04T03:27:28.430341+00:00",
+              "event_id": null,
+              "published": false,
+              "operator": null,
+              "decision_note": null,
+              "decision": null,
+              "decided_at": null,
+              "published_at": null,
+              "executed_at": null
+            },
+            {
+              "recommendation_id": "a0552f01-f3d9-4828-ac20-c72b33d442a6",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "forecast_id": "750a4a34-7097-5e17-938f-8658c3746618",
+              "quantity": 36,
+              "reason": "ceil(upper 25.42 + safety stock 10 - available 0), clamped to 0\u2013500.",
+              "risk": "CRITICAL",
+              "status": "SUPERSEDED",
+              "created_at": "2026-10-04T03:26:32.534361+00:00",
+              "updated_at": "2026-10-04T03:26:54.813749+00:00",
+              "event_id": null,
+              "published": false,
+              "operator": null,
+              "decision_note": null,
+              "decision": null,
+              "decided_at": null,
+              "published_at": null,
+              "executed_at": null
+            },
+            {
+              "recommendation_id": "f5203bae-6714-4053-aac3-d80be2c963eb",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "forecast_id": "6feda3de-7c43-57b6-b019-08d1e0e4f864",
+              "quantity": 29,
+              "reason": "ceil(upper 18.2 + safety stock 10 - available 0), clamped to 0\u2013500.",
+              "risk": "CRITICAL",
+              "status": "SUPERSEDED",
+              "created_at": "2026-10-04T03:26:26.464445+00:00",
+              "updated_at": "2026-10-04T03:26:32.534361+00:00",
+              "event_id": null,
+              "published": false,
+              "operator": null,
+              "decision_note": null,
+              "decision": null,
+              "decided_at": null,
+              "published_at": null,
+              "executed_at": null
+            },
+            {
+              "recommendation_id": "41c31e62-bbae-4541-99b3-6d78415c03f9",
+              "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+              "forecast_id": "d1a0ed6c-63ae-5ce0-97b9-d4b3beb9cb88",
+              "quantity": 23,
+              "reason": "ceil(upper 18.6 + safety stock 10 - available 6), clamped to 0\u2013500.",
+              "risk": "MEDIUM",
+              "status": "SUPERSEDED",
+              "created_at": "2026-10-04T03:26:20.991452+00:00",
+              "updated_at": "2026-10-04T03:26:26.464445+00:00",
+              "event_id": null,
+              "published": false,
+              "operator": null,
+              "decision_note": null,
+              "decision": null,
+              "decided_at": null,
+              "published_at": null,
+              "executed_at": null
+            }
+          ],
+          "forecast_stale": false,
+          "history_note": "Sales use event-time buckets; stock and price are durable snapshots observed by the feature worker, not exact per-sale states."
+        },
+        "error": null
+      }
+    ],
+    "error": null
+  },
+  "scenario_explanation": {
+    "mode": "Evidence-only \u00b7 no LLM configured",
+    "answer": "Flash sale summary\nFlash sale: completed successfully.\nStarted: 2026-10-04T03:24:27.247467+00:00. Ended: 2026-10-04T03:27:41.031748+00:00.\n175 purchase attempts were recorded.\n80 purchases were fulfilled.\n95 attempts could not be fulfilled because inventory was unavailable.\nFlash sale: completed successfully.\nStarted: 2026-10-03T15:45:37.835143+00:00. Ended: 2026-10-03T15:46:38.363195+00:00.\n83 purchase attempts were recorded.\n60 purchases were fulfilled.\n23 attempts could not be fulfilled because inventory was unavailable.\nDemand spike: completed successfully.\nStarted: 2026-10-03T15:46:42.384349+00:00. Ended: 2026-10-03T15:46:53.803626+00:00.\n10 purchase attempts were recorded.\n10 purchases were fulfilled.\n0 attempts could not be fulfilled because inventory was unavailable.\nNormal: completed successfully.\nStarted: 2026-10-03T15:46:41.343364+00:00. Ended: 2026-10-03T15:46:41.829340+00:00.\n2 purchase attempts were recorded.\n2 purchases were fulfilled.\n0 attempts could not be fulfilled because inventory was unavailable.\nRestock: completed successfully.\nStarted: 2026-10-03T15:46:39.289158+00:00. Ended: 2026-10-03T15:46:40.625337+00:00.\n50 units were restocked through inventory events.\n\nVerified sources and retrieval times\n- scenario history (core-confirmed inventory events) \u00b7 2026-10-04T03:27:44.609731+00:00",
+    "retrieved_at": "2026-10-04T03:27:44.609869+00:00",
+    "evidence": [
+      {
+        "tool": "get_scenario_history",
+        "retrieved_at": "2026-10-04T03:27:44.609731Z",
+        "data": [
+          {
+            "scenario_id": "f8070b33-68e0-4003-8099-02082632e0c9",
+            "kind": "FLASH_SALE",
+            "seed": 42,
+            "started_at": "2026-10-04T03:24:27.247467+00:00",
+            "ended_at": "2026-10-04T03:27:41.031748+00:00",
+            "status": "COMPLETED",
+            "data": {
+              "kind": "FLASH_SALE",
+              "product_ids": [
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+              ],
+              "seed": 42,
+              "bins": 36,
+              "strength": 6.0,
+              "restock_quantity": 50,
+              "demo_start_stock": 80,
+              "tick": 36,
+              "attempted": 175,
+              "fulfilled": 80,
+              "censored": 95,
+              "simulated_minutes": 180,
+              "preparation": {
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": 42
+              },
+              "prepared": true,
+              "last_tick_at": "2026-10-04T03:27:40.770996+00:00"
+            }
+          },
+          {
+            "scenario_id": "afc47ee4-462e-49c6-a6ff-927628afbe85",
+            "kind": "DEMAND_SPIKE",
+            "seed": 77,
+            "started_at": "2026-10-03T15:46:42.384349+00:00",
+            "ended_at": "2026-10-03T15:46:53.803626+00:00",
+            "status": "COMPLETED",
+            "data": {
+              "kind": "DEMAND_SPIKE",
+              "product_ids": [
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+              ],
+              "seed": 77,
+              "bins": 3,
+              "strength": 6.0,
+              "restock_quantity": 50,
+              "tick": 3,
+              "attempted": 10,
+              "fulfilled": 10,
+              "censored": 0,
+              "simulated_minutes": 15,
+              "last_tick_at": "2026-10-03T15:46:53.719767+00:00"
+            }
+          },
+          {
+            "scenario_id": "95bcd818-4c4b-4dea-b504-678793b6dc30",
+            "kind": "NORMAL",
+            "seed": 77,
+            "started_at": "2026-10-03T15:46:41.343364+00:00",
+            "ended_at": "2026-10-03T15:46:41.829340+00:00",
+            "status": "COMPLETED",
+            "data": {
+              "kind": "NORMAL",
+              "product_ids": [
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+              ],
+              "seed": 77,
+              "bins": 1,
+              "strength": 6.0,
+              "restock_quantity": 50,
+              "tick": 1,
+              "attempted": 2,
+              "fulfilled": 2,
+              "censored": 0,
+              "simulated_minutes": 5,
+              "last_tick_at": "2026-10-03T15:46:41.710381+00:00"
+            }
+          },
+          {
+            "scenario_id": "55f81e7f-c883-47e4-b1fa-c9ff01451572",
+            "kind": "RESTOCK",
+            "seed": 42,
+            "started_at": "2026-10-03T15:46:39.289158+00:00",
+            "ended_at": "2026-10-03T15:46:40.625337+00:00",
+            "status": "COMPLETED",
+            "data": {
+              "kind": "RESTOCK",
+              "product_ids": [
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+              ],
+              "seed": 42,
+              "bins": 1,
+              "strength": 6.0,
+              "restock_quantity": 50,
+              "tick": 1,
+              "attempted": 0,
+              "fulfilled": 0,
+              "censored": 0,
+              "simulated_minutes": 5,
+              "last_tick_at": "2026-10-03T15:46:39.603216+00:00",
+              "restocked": 50
+            }
+          },
+          {
+            "scenario_id": "16f38a1d-9fa6-4b70-8bc5-9893b08b39f5",
+            "kind": "FLASH_SALE",
+            "seed": 42,
+            "started_at": "2026-10-03T15:45:37.835143+00:00",
+            "ended_at": "2026-10-03T15:46:38.363195+00:00",
+            "status": "COMPLETED",
+            "data": {
+              "kind": "FLASH_SALE",
+              "product_ids": [
+                "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+              ],
+              "seed": 42,
+              "bins": 12,
+              "strength": 6.0,
+              "restock_quantity": 50,
+              "tick": 12,
+              "attempted": 83,
+              "fulfilled": 60,
+              "censored": 23,
+              "simulated_minutes": 60,
+              "last_tick_at": "2026-10-03T15:46:38.097888+00:00"
+            }
+          }
+        ],
+        "error": null
+      }
+    ],
+    "error": null
+  },
+  "model_health": {
+    "status": "running",
+    "sampled_at": "2026-10-04T03:27:44.339702+00:00",
+    "model_version": "hgbr-76457dadb4af",
+    "last_successful_forecast": "2026-10-04T03:27:44.327186+00:00",
+    "feature_lag": 4,
+    "feature_age_seconds": 0.365949,
+    "feature_events": 2747,
+    "forecast_requests": 20500,
+    "forecast_successes": 20500,
+    "baseline_fallbacks": 0,
+    "recommendations_created": 10,
+    "last_forecast_ms": 349.4199880005908,
+    "recent_evaluated": 200,
+    "recent_mae": 44.42855,
+    "recent_rmse": 44.49078200593917,
+    "recommendations_by_status": {
+      "EXPIRED": 118,
+      "REJECTED": 2,
+      "SUPERSEDED": 7,
+      "EXECUTED": 3
+    }
+  }
+}

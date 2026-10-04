@@ -440,3 +440,23 @@ td {
     width: 100%;
   }
 }
+
+/* Final polish: preserve the existing identity, give facts a readable hierarchy. */
+.health-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
+.health-grid div { min-width:0; padding:12px; border:1px solid #31453b; border-radius:10px; }
+.health-grid dt { color:#aab9af; font-size:12px; margin-bottom:6px; }
+.health-grid dd { margin:0; overflow-wrap:anywhere; font-size:17px; }
+.model-health { margin:28px 0; padding:24px; border:1px solid #31453b; border-radius:14px; }
+.model-health pre, .retail-main pre { max-width:100%; overflow:auto; font-size:12px; }
+.history-filters { display:flex; flex-wrap:wrap; gap:16px; margin:20px 0; }
+.history-filters label { display:grid; gap:8px; }
+.history-group { border-top:1px solid #31453b; padding:16px 0; }
+.advice-explanation details, .forecast-snapshot { font-size:13px; margin:12px 0; }
+.retail-chart svg, .forecast-figure svg { width:100%; height:auto; }
+.retail-chart circle:hover, .retail-chart circle:focus, .forecast-figure circle:hover, .forecast-figure circle:focus { fill:#b6ed85; outline:none; stroke:#ffffff; }
+.engineering-details { min-width:0; }
+.engineering-details > section { margin-top:28px; }
+.engineering-details dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px; }
+.table-wrap table { font-variant-numeric:tabular-nums; }
+.table-wrap th, .table-wrap td { padding:12px; border-bottom:1px solid #31453b; }
+.recent-activity { margin:24px 0; }

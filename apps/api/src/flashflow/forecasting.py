@@ -148,6 +148,8 @@ def assess(available, forecast, safety_stock=10, max_restock=500):
         "risk_level": risk,
         "estimated_stockout_minutes": round(eta, 1) if eta is not None else None,
         "recommended_quantity": quantity,
+        "safety_stock": safety_stock,
+        "max_restock": max_restock,
         "risk_reason": f"{available} available; expected {expected:g}, upper band {upper:g} over 60 simulated minutes.",
         "recommendation_reason": f"ceil(upper {upper:g} + safety stock {safety_stock} - available {available}), clamped to 0–{max_restock}.",
         "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",

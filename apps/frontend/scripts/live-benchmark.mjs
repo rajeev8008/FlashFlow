@@ -26,7 +26,7 @@ try {
   }
   const output = process.env.LIVE_BENCH_OUTPUT ?? `../../docs/benchmarks/live-browser-${Date.now()}.json`;
   await writeFile(output, JSON.stringify({ kind: 'real-rendered-dashboard', seconds,
-    browser: browser.version(), errors, notes: 'One-second dashboard samples; rolling 512 rendered-event percentiles, coalesced events excluded; synchronized clocks required; React layout commit is not physical display scanout', samples }, null, 2), { flag: 'wx' });
+    browser: browser.version(), errors, notes: 'One-second dashboard samples; rolling latest 512 rendered-event percentiles within 30 seconds; reset on reconnect/mode change, coalesced events excluded; synchronized clocks required; React layout commit is not physical display scanout', samples }, null, 2), { flag: 'wx' });
   console.log(`Saved ${output}`);
 } finally {
   await browser.close();
