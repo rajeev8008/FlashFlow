@@ -1,5 +1,7 @@
 # Raw run annotations
 
+Raw JSON measurements remain in the repository to support the published reports. The serial-baseline source archive, replay Compose override, screenshots and validation logs are retained only on the original local PC. The baseline replay commands below require those local files; they cannot be run from a fresh clone alone. Current pipeline and browser probes remain available in the source tree.
+
 October 2 files are preserved historical observations. `browser-1790931434070.json` remains a superseded, producer-throttled pilot as explained in `../performance.md`.
 
 October 3 baseline and consumer-count comparisons are short runs below the 45-second input heartbeat timeout. Their socket samples cover their test intervals. The baseline source archive contains the timing-only serial implementation used for `baseline-serial-2026-10-03.json`; SHA-256: `0dc34e927360b68289a4dde626a7c67556ae6d01c80cae216e2da6e734204ac8`.

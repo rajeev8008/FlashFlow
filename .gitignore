@@ -14,3 +14,18 @@ node_modules/
 *.tsbuildinfo
 test-results/
 playwright-report/
+
+# Local planning and supporting documents (reports remain tracked)
+/PROJECT.md
+/docs/*.md
+!/docs/ai-retail-report.md
+!/docs/final-polish.md
+!/docs/ml-experiment.md
+!/docs/performance.md
+!/docs/pipeline-timing.md
+!/docs/throughput-report.md
+/docs/benchmarks/*.png
+/docs/benchmarks/*.txt
+/docs/benchmarks/*.zip
+/docs/benchmarks/*.yml
+.ruff_cache/

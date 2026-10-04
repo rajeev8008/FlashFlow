@@ -18,7 +18,7 @@ The hot path locked/read a product, checked a receipt, persisted stock/receipt/p
 
 Broker append timestamps separated producer and consumption delays in the corrected 2,000/s case: producer acknowledgement P95 **4.83 ms**, producer-to-broker rolling P95 **2.56 ms**, broker-to-consumer rolling P95 **84,546.71 ms**. That last interval combines broker residence, fetch/network and consumer-client buffering; broker internal disk/network work is not independently traced. Together with DB timers, lag growth and the batching intervention, this identifies consumer service rate as the limiting side of the pipeline.
 
-Sources: [serial reproduction](benchmarks/baseline-serial-2026-10-03.json), [corrected matrix](benchmarks/pipeline-corrected-2026-10-03.json), [preserved baseline source](benchmarks/baseline-source-2026-10-03.zip).
+Sources: [serial reproduction](benchmarks/baseline-serial-2026-10-03.json), [corrected matrix](benchmarks/pipeline-corrected-2026-10-03.json), preserved baseline source (local reference).
 
 ## B. Optimizations and correctness
 
@@ -141,7 +141,7 @@ Normal CI runs backend tests/lint and frontend unit/type/build checks. Separate 
 
 ## E–F. Architecture and five-minute explanation
 
-[Architecture and failure paths](architecture.md), [main/scaling diagram and timing semantics](pipeline-timing.md), [five-minute interview walkthrough](interview.md).
+Architecture and failure paths (local reference), [main/scaling diagram and timing semantics](pipeline-timing.md), five-minute interview walkthrough (local reference).
 
 Kafka is the replayable product-keyed backbone. PostgreSQL durably stores transactional inventory, receipts and price audits. Redis stores hot/fallback state. Co-located consumers batch business processing and share a gateway with bounded client queues. The browser separates ingestion from rendering through rAF, normalized Zustand selectors and memoized cards. Catalog circuit recovery retains stale data; pricing remains bounded audited rules. Delivery is at least once with idempotent business effects, not Kafka exactly-once.
 
@@ -156,7 +156,7 @@ Production scaling needs cross-instance fanout before adding gateway processes, 
 
 ## H. Interview questions and reproduction
 
-The [15 implementation-grounded questions and answers](interview.md#fifteen-questions-and-answers) cover Kafka, product keys, Redis Pub/Sub, lag, consumer groups, ordering, idempotency, PostgreSQL/Redis, circuit recovery, rAF, Zustand, slow clients, gateway scaling, delivery semantics and production changes.
+The 15 implementation-grounded questions and answers (local reference) cover Kafka, product keys, Redis Pub/Sub, lag, consumer groups, ordering, idempotency, PostgreSQL/Redis, circuit recovery, rAF, Zustand, slow clients, gateway scaling, delivery semantics and production changes.
 
 Use README commands, [baseline replay instructions](benchmarks/annotations.md#reproduce-the-serial-baseline), `tests/pipeline_benchmark.py`, `tests/load_probe.py`, `npm run benchmark` and `npm run benchmark:live`. Set three members explicitly for the sustained configuration and stop the normal simulator before any independent producer. Preserve new raw files rather than overwriting prior observations.
 

@@ -140,15 +140,15 @@ Adding a cart/payment/storefront now would dilute the existing engineering and o
 
 ## N. Demo script
 
-Follow [the 3–5 minute demo](ai-demo-and-interview.md): introduce the clock and business question, trigger a seeded Retail Demo flash sale, inspect observed history versus forecast/band, explain the stockout calculation, ask the evidence Analyst why the product needs attention, approve a recommendation, show publication/execution receipt, and finish at Engineering with core and model health. Warm up the history before presenting; restock availability may be needed if earlier tests exhausted the demo product.
+Follow the 3–5 minute demo (local reference): introduce the clock and business question, trigger a seeded Retail Demo flash sale, inspect observed history versus forecast/band, explain the stockout calculation, ask the evidence Analyst why the product needs attention, approve a recommendation, show publication/execution receipt, and finish at Engineering with core and model health. Warm up the history before presenting; restock availability may be needed if earlier tests exhausted the demo product.
 
 ## O. Interview explanation
 
-The [five-minute technical walkthrough](ai-demo-and-interview.md) follows the actual inventory event, database receipt, Redis snapshot, socket and browser path before adding the independent causal forecast observer. It explains why forecasting cannot delay inventory processing, how approval reuses the existing idempotent event path, and why a numerical forecast model and an evidence Analyst solve different problems.
+The five-minute technical walkthrough (local reference) follows the actual inventory event, database receipt, Redis snapshot, socket and browser path before adding the independent causal forecast observer. It explains why forecasting cannot delay inventory processing, how approval reuses the existing idempotent event path, and why a numerical forecast model and an evidence Analyst solve different problems.
 
 ## P. Interview questions
 
-[Twenty-two implementation-specific questions and answers](ai-demo-and-interview.md) cover Kafka ordering/offsets, PostgreSQL transactions, Redis fallback, WebSocket backpressure, React coalescing, forecasting targets, leakage, feature design, baseline choice, intervals, stockout assumptions, monitoring, grounded tool calls, failure isolation and human approval.
+Twenty-two implementation-specific questions and answers (local reference) cover Kafka ordering/offsets, PostgreSQL transactions, Redis fallback, WebSocket backpressure, React coalescing, forecasting targets, leakage, feature design, baseline choice, intervals, stockout assumptions, monitoring, grounded tool calls, failure isolation and human approval.
 
 ## Q. Resume bullets
 
