@@ -1,0 +1,166 @@
+{
+  "status": "passed",
+  "scenario_id": "16f38a1d-9fa6-4b70-8bc5-9893b08b39f5",
+  "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+  "completed_scenario": {
+    "scenario_id": "16f38a1d-9fa6-4b70-8bc5-9893b08b39f5",
+    "kind": "FLASH_SALE",
+    "seed": 42,
+    "started_at": "2026-10-03T15:45:37.835143+00:00",
+    "ended_at": "2026-10-03T15:46:38.363195+00:00",
+    "status": "COMPLETED",
+    "data": {
+      "kind": "FLASH_SALE",
+      "product_ids": [
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+      ],
+      "seed": 42,
+      "bins": 12,
+      "strength": 6.0,
+      "restock_quantity": 50,
+      "plans": {
+        "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+          3,
+          5,
+          3,
+          5,
+          7,
+          14,
+          4,
+          9,
+          9,
+          10,
+          9,
+          5
+        ]
+      },
+      "tick": 12,
+      "attempted": 83,
+      "fulfilled": 60,
+      "censored": 23,
+      "simulated_minutes": 60,
+      "last_tick_at": "2026-10-03T15:46:38.097888+00:00"
+    }
+  },
+  "executed_recommendation": {
+    "recommendation_id": "61c173fe-b8f2-4bea-8522-f9e62d1484b1",
+    "product_id": "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005",
+    "forecast_id": "4fb7c661-1a77-5a5f-b19e-97532d4ae959",
+    "quantity": 20,
+    "reason": "ceil(upper 38.38 + safety stock 10 - available 29), clamped to 0\u2013500.",
+    "risk": "MEDIUM",
+    "status": "EXECUTED",
+    "created_at": "2026-10-03T15:45:50.929281+00:00",
+    "updated_at": "2026-10-03T15:45:51.738228+00:00",
+    "event_id": "8dbb1287-6a79-484a-bf6a-43de55ebd963",
+    "published": true,
+    "operator": "Local demo operator",
+    "decision_note": "Integration approved Kafka restock",
+    "decision": "APPROVE",
+    "decided_at": "2026-10-03T15:45:51.391450+00:00",
+    "published_at": "2026-10-03T15:45:51.512524+00:00",
+    "executed_at": "2026-10-03T15:45:51.738228+00:00"
+  },
+  "analyst_mode": "Evidence-only \u00b7 no LLM configured",
+  "latest_forecast": {
+    "expected_sales": 25.85,
+    "lower_bound": 11.86,
+    "upper_bound": 39.83,
+    "model_version": "hgbr-76457dadb4af",
+    "fallback": false,
+    "interval_method": "90% validation absolute-residual band",
+    "horizon_minutes": 60,
+    "risk_level": "MEDIUM",
+    "estimated_stockout_minutes": 74.3,
+    "recommended_quantity": 18,
+    "target": "observed completed sales; stock-constrained, not latent demand",
+    "risk_reason": "32 available; expected 25.85, upper band 39.83 over 60 simulated minutes.",
+    "recommendation_reason": "ceil(upper 39.83 + safety stock 10 - available 32), clamped to 0\u2013500.",
+    "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+    "available_stock": 32,
+    "feature_age_seconds": 0.26012,
+    "features": [
+      5,
+      3,
+      0,
+      2.6666666666666665,
+      0.6666666666666666,
+      1.5456030825826172,
+      5,
+      32,
+      1.05,
+      0.5555702330196022,
+      -0.8314696123025453,
+      1
+    ],
+    "feature_schema": "causal-5min-v1",
+    "simulated_clock_scale": 60,
+    "horizon_real_seconds": 60,
+    "bucket_seconds": 5,
+    "input_end": "2026-10-03T15:45:45+00:00",
+    "target_start": "2026-10-03T15:45:50+00:00",
+    "issued_at": "2026-10-03T15:45:45.124898+00:00"
+  },
+  "additional_scenarios": [
+    {
+      "scenario_id": "95bcd818-4c4b-4dea-b504-678793b6dc30",
+      "kind": "NORMAL",
+      "seed": 77,
+      "started_at": "2026-10-03T15:46:41.343364+00:00",
+      "ended_at": "2026-10-03T15:46:41.829340+00:00",
+      "status": "COMPLETED",
+      "data": {
+        "kind": "NORMAL",
+        "product_ids": [
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+        ],
+        "seed": 77,
+        "bins": 1,
+        "strength": 6.0,
+        "restock_quantity": 50,
+        "plans": {
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+            2
+          ]
+        },
+        "tick": 1,
+        "attempted": 2,
+        "fulfilled": 2,
+        "censored": 0,
+        "simulated_minutes": 5,
+        "last_tick_at": "2026-10-03T15:46:41.710381+00:00"
+      }
+    },
+    {
+      "scenario_id": "afc47ee4-462e-49c6-a6ff-927628afbe85",
+      "kind": "DEMAND_SPIKE",
+      "seed": 77,
+      "started_at": "2026-10-03T15:46:42.384349+00:00",
+      "ended_at": "2026-10-03T15:46:53.803626+00:00",
+      "status": "COMPLETED",
+      "data": {
+        "kind": "DEMAND_SPIKE",
+        "product_ids": [
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005"
+        ],
+        "seed": 77,
+        "bins": 3,
+        "strength": 6.0,
+        "restock_quantity": 50,
+        "plans": {
+          "d26e8b0a-f8a5-5278-b4a3-44d7eaca7005": [
+            2,
+            5,
+            3
+          ]
+        },
+        "tick": 3,
+        "attempted": 10,
+        "fulfilled": 10,
+        "censored": 0,
+        "simulated_minutes": 15,
+        "last_tick_at": "2026-10-03T15:46:53.719767+00:00"
+      }
+    }
+  ]
+}

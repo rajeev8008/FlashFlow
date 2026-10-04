@@ -68,6 +68,9 @@ services:
       CONSUMER_BATCH_ENABLED: ${CONSUMER_BATCH_ENABLED:-true}
       ENABLE_CHAOS: ${ENABLE_CHAOS:-false}
       CHAOS_TOKEN: ${CHAOS_TOKEN:-}
+      ENABLE_RETAIL_CONTROLS: ${ENABLE_RETAIL_CONTROLS:-false}
+    volumes:
+      - ./apps/api/artifacts:/app/artifacts:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -99,6 +102,24 @@ services:
         condition: service_healthy
     command: ["python", "-m", "flashflow.simulator"]
 
+  forecast:
+    init: true
+    build: ./apps/api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://flashflow:flashflow@postgres:5432/flashflow}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    volumes:
+      - ./apps/api/artifacts:/app/artifacts:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["python", "-m", "flashflow.forecast_worker"]
+    stop_grace_period: 20s
+
   frontend:
     init: true
     build:
@@ -109,6 +130,7 @@ services:
       API_INTERNAL_URL: http://api:8000
       APP_ENV: ${APP_ENV:-production}
       CHAOS_TOKEN: ${CHAOS_TOKEN:-}
+      ENABLE_RETAIL_CONTROLS: ${ENABLE_RETAIL_CONTROLS:-false}
     depends_on:
       api:
         condition: service_healthy

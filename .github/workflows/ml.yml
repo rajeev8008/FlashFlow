@@ -1,0 +1,20 @@
+name: Forecast evaluation
+on:
+  workflow_dispatch:
+jobs:
+  ml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -e 'apps/api[ml]'
+      - run: python -m flashflow.train_forecast --output /tmp/flashflow-model
+        env:
+          OMP_NUM_THREADS: '2'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simulated-forecast-evaluation
+          path: /tmp/flashflow-model/evaluation.json

@@ -1,6 +1,10 @@
 # FlashFlow
 
-FlashFlow streams simulated retail inventory and audited rule-based prices through Kafka, persists validated changes in PostgreSQL, caches the latest products in Redis, and broadcasts updates to a Next.js dashboard over WebSockets. The local implementation includes observability, reproducible benchmarks/load probes, and CI configuration; it is not a production deployment.
+FlashFlow is a local retail operations demo: stream inventory through Kafka, forecast the next simulated hour of sales, identify stockout risk, review restock recommendations, and investigate the evidence with a read-only Analyst. PostgreSQL records validated events and decisions; Redis and WebSockets deliver live updates. Prices remain audited rules; demand forecasting uses a trained model with a moving-average fallback. All retail data is simulated.
+
+The home page has Operations, Products, Recommendations and AI Analyst views. The original rendering benchmark and failure dashboard remains at `/engineering`. Start with a seeded flash sale on a Retail Demo product, inspect its forecast and explanation, then approve a restock and watch its Kafka-backed audit status.
+
+Upgrade documentation: [implementation and measured results](docs/ai-retail-report.md), [ML experiment and reproduction](docs/ml-experiment.md), [demo and 22 interview questions](docs/ai-demo-and-interview.md). The Analyst defaults to **evidence-only mode**, with no external AI call or API key required.
 
 Current throughput work: [pipeline timing and correctness](docs/pipeline-timing.md), [performance report](docs/throughput-report.md).
 
@@ -21,7 +25,12 @@ Open:
 - API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
 - Metrics: http://localhost:8000/metrics
+- Original engineering dashboard: http://localhost:3000/engineering
 - Seeded products: http://localhost:8000/products
+
+Compose also starts an independent `forecast` worker. It seeds three isolated Retail Demo products; the general simulator excludes these so scenario attempts are reproducible. Allow roughly one real minute for twelve history buckets. Five real seconds represent five simulated minutes; a forecast hour lasts sixty real seconds. Forecasts and scenarios label this accelerated clock explicitly.
+
+To enable local scenario and approval controls, set `APP_ENV=development`, `ENABLE_RETAIL_CONTROLS=true`, and a nonempty local `CHAOS_TOKEN` in `.env`, then recreate the API and frontend. Keep `ENABLE_CHAOS=false` for ordinary demonstrations. Controls default off and the token stays in the server-side proxy. This local guard is not a replacement for production authentication. `ANALYST_ENABLED=false` keeps the Analyst in evidence-only mode even if provider settings exist.
 
 The API container runs Alembic migrations and idempotently seeds 500 products before starting. The simulator then publishes inventory events to `inventory-events`, keyed by `product_id` to preserve per-product partition ordering. Both API and frontend have Compose health checks; `docker compose up -d --build --wait` provides a ready-stack startup. Processes use init/signal forwarding, bounded health dependency checks, and shutdown cleanup. Frontend dependencies install from the lockfile with `npm ci`.
 

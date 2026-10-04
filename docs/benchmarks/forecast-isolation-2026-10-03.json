@@ -1,0 +1,31 @@
+{
+  "forecast_worker": "stopped",
+  "model_health": {
+    "status": "unavailable",
+    "reason": "Forecast worker heartbeat absent",
+    "recent_evaluated": 200,
+    "recent_mae": 29.02505,
+    "recent_rmse": 29.07296476969626,
+    "recommendations_by_status": {
+      "EXPIRED": 32,
+      "REJECTED": 1,
+      "EXECUTED": 1
+    }
+  },
+  "summary": {
+    "products": 500,
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "HEALTHY": 0,
+    "pending": 0,
+    "stale": 500,
+    "recent_price_changes": 99
+  },
+  "core_health": {
+    "status": "ok",
+    "postgres": "ok",
+    "redis": "ok"
+  },
+  "inventory_integration": "passed while forecast worker stopped"
+}

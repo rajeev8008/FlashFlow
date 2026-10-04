@@ -8,6 +8,7 @@ jobs:
     env:
       APP_ENV: development
       ENABLE_CHAOS: 'true'
+      ENABLE_RETAIL_CONTROLS: 'true'
       CHAOS_TOKEN: local-ci-controls-only
       CONSUMER_INSTANCES: '3'
     steps:
@@ -15,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: docker compose up -d --build --wait api frontend simulator
+      - run: docker compose up -d --build --wait api frontend simulator forecast
       - run: |
           docker compose exec -T api python tests/integration_phase2.py
           docker compose exec -T api python tests/integration_pricing.py
@@ -24,6 +25,7 @@ jobs:
           docker compose up -d --wait api
           docker compose exec -T api python tests/integration_phase2.py --restart-check
           docker compose exec -T api python tests/integration_resilience.py
+          docker compose exec -T api python tests/integration_retail.py
       - run: npm ci && npx playwright install --with-deps chromium && npm run test:e2e
         working-directory: apps/frontend
         env:

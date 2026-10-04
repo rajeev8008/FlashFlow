@@ -81,7 +81,7 @@ try {
         await page.routeWebSocket("**/ws", (ws) => {
           socket = ws;
         });
-        await page.goto(process.env.FRONTEND_URL ?? "http://localhost:3000");
+        await page.goto(process.env.FRONTEND_URL ?? "http://localhost:3000/engineering");
         await page.locator("[data-product]").last().waitFor();
         await page.getByLabel("Render mode").selectOption(mode);
         await page.waitForTimeout(2100); // Exclude hydration/remounts; preserve the documented parent pulse.

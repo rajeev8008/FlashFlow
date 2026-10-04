@@ -1,0 +1,21 @@
+{
+  "status": "running",
+  "sampled_at": "2026-10-03T15:30:55.595885+00:00",
+  "model_version": "moving-average-v1",
+  "last_successful_forecast": "2026-10-03T15:30:55.541737+00:00",
+  "feature_lag": 10,
+  "feature_age_seconds": 1.544898,
+  "feature_events": 101,
+  "forecast_requests": 500,
+  "forecast_successes": 500,
+  "baseline_fallbacks": 500,
+  "last_forecast_ms": 1476.00948499894,
+  "recent_evaluated": 200,
+  "recent_mae": 29.02505,
+  "recent_rmse": 29.07296476969626,
+  "recommendations_by_status": {
+    "EXPIRED": 32,
+    "REJECTED": 1,
+    "EXECUTED": 1
+  }
+}

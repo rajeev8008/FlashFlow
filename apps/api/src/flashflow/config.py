@@ -42,6 +42,17 @@ class Settings(BaseSettings):
     app_env: Literal["development", "test", "production"] = "production"
     enable_chaos: bool = False
     chaos_token: str = ""
+    enable_retail_controls: bool = False
+    forecast_bucket_seconds: int = Field(5, ge=5, le=5)
+    forecast_interval_seconds: int = Field(5, ge=5, le=300)
+    forecast_stale_seconds: int = Field(30, ge=10)
+    forecast_safety_stock: int = Field(10, ge=0, le=500)
+    forecast_max_restock: int = Field(500, ge=1, le=10000)
+    forecast_model_path: str = "/app/artifacts/demand-model.json"
+    analyst_base_url: str = "https://api.openai.com/v1"
+    analyst_model: str = ""
+    analyst_api_key: str = ""
+    analyst_enabled: bool = False
     breaker_failure_threshold: int = Field(3, ge=1)
     breaker_recovery_seconds: float = Field(5, gt=0)
     breaker_half_open_trials: int = Field(1, ge=1)
@@ -55,6 +66,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def pricing_limits(self):
+        if self.analyst_base_url != "https://api.openai.com/v1" and self.analyst_api_key and not self.analyst_base_url.startswith("https://"):
+            raise ValueError("Remote analyst endpoint must use HTTPS")
         if self.consumer_instances > self.kafka_inventory_partitions:
             raise ValueError("consumer instances must not exceed inventory partition count")
         if self.pricing_min_price > self.pricing_max_price:

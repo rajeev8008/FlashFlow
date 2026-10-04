@@ -52,6 +52,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FlashFlow API", version="0.6.0", lifespan=lifespan)
+from .retail import router as retail_router
+from . import analyst as analyst_module
+app.include_router(retail_router)
 
 
 @app.get("/pricing/decisions")
@@ -97,6 +100,7 @@ async def metrics():
             "consumer_batch_enabled": settings.consumer_batch_enabled,
             "failed_socket_sends": manager.counters["failed_sends"],
             "disconnected_clients": manager.counters["disconnected"],
+            "analyst": dict(analyst_module.COUNTERS),
             "server_now": datetime.now(timezone.utc).isoformat()}
 
 

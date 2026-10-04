@@ -1,0 +1,98 @@
+{
+  "status": "passed",
+  "scenario_id": "11c81efc-4e07-4e0b-a185-2fa97dbc1bc5",
+  "product_id": "14d4d672-5c2e-501f-a03a-7b6bdb998c75",
+  "completed_scenario": {
+    "scenario_id": "11c81efc-4e07-4e0b-a185-2fa97dbc1bc5",
+    "kind": "FLASH_SALE",
+    "seed": 42,
+    "started_at": "2026-10-03T15:17:09.424822+00:00",
+    "ended_at": "2026-10-03T15:18:09.459261+00:00",
+    "status": "COMPLETED",
+    "data": {
+      "kind": "FLASH_SALE",
+      "product_ids": [
+        "14d4d672-5c2e-501f-a03a-7b6bdb998c75"
+      ],
+      "seed": 42,
+      "bins": 12,
+      "strength": 6.0,
+      "restock_quantity": 50,
+      "plans": {
+        "14d4d672-5c2e-501f-a03a-7b6bdb998c75": [
+          3,
+          5,
+          3,
+          5,
+          7,
+          14,
+          4,
+          9,
+          9,
+          10,
+          9,
+          5
+        ]
+      },
+      "tick": 12,
+      "attempted": 83,
+      "fulfilled": 67,
+      "censored": 16,
+      "simulated_minutes": 60,
+      "last_tick_at": "2026-10-03T15:18:09.192036+00:00"
+    }
+  },
+  "executed_recommendation": {
+    "recommendation_id": "e8933cbc-70fb-4bdf-8504-347cd8ad5316",
+    "product_id": "14d4d672-5c2e-501f-a03a-7b6bdb998c75",
+    "forecast_id": "51d0ca72-3277-5291-bf7b-03977ae15d4a",
+    "quantity": 30,
+    "reason": "ceil(upper 53.39 + safety stock 10 - available 34), clamped to 0\u2013500.",
+    "risk": "HIGH",
+    "status": "EXECUTED",
+    "created_at": "2026-10-03T15:17:10+00:00",
+    "updated_at": "2026-10-03T15:17:12.898504+00:00",
+    "event_id": "4ec0ae3a-0720-4a6a-8398-a672bbbf1862",
+    "published": true,
+    "operator": "Local demo operator",
+    "decision_note": "Integration approved Kafka restock"
+  },
+  "analyst_mode": "Evidence-only \u00b7 no LLM configured",
+  "latest_forecast": {
+    "expected_sales": 33.48,
+    "lower_bound": 19.49,
+    "upper_bound": 47.47,
+    "model_version": "hgbr-76457dadb4af",
+    "fallback": false,
+    "interval_method": "90% validation absolute-residual band",
+    "horizon_minutes": 60,
+    "target": "observed completed sales; stock-constrained, not latent demand",
+    "risk_level": "MEDIUM",
+    "estimated_stockout_minutes": 66.3,
+    "recommended_quantity": 21,
+    "risk_reason": "37 available; expected 33.48, upper band 47.47 over 60 simulated minutes.",
+    "recommendation_reason": "ceil(upper 47.47 + safety stock 10 - available 37), clamped to 0\u2013500.",
+    "stockout_assumption": "Constant average forecast rate; no inbound stock; advisory, not a probability.",
+    "available_stock": 37,
+    "feature_age_seconds": 0.482322,
+    "features": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.0,
+      0,
+      37,
+      0.95,
+      0.9713420698132614,
+      0.2376858923261731,
+      0
+    ],
+    "feature_schema": "causal-5min-v1",
+    "simulated_clock_scale": 60,
+    "horizon_real_seconds": 60,
+    "bucket_seconds": 5,
+    "input_end": "2026-10-03T15:17:05+00:00"
+  }
+}

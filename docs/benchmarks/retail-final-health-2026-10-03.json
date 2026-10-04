@@ -1,0 +1,35 @@
+{
+  "model_health": {
+    "status": "running",
+    "sampled_at": "2026-10-03T16:04:27.615394+00:00",
+    "model_version": "hgbr-76457dadb4af",
+    "last_successful_forecast": "2026-10-03T16:04:27.153694+00:00",
+    "feature_lag": 10,
+    "feature_age_seconds": 1.132103,
+    "feature_events": 47014,
+    "last_forecast_ms": 408.02332400016894,
+    "forecast_requests": 95891,
+    "forecast_successes": 95891,
+    "baseline_fallbacks": 0,
+    "recommendations_created": 26,
+    "recent_evaluated": 200,
+    "recent_mae": 44.881,
+    "recent_rmse": 44.94565908961621,
+    "recommendations_by_status": {
+      "EXPIRED": 55,
+      "REJECTED": 2,
+      "PENDING": 1,
+      "EXECUTED": 2
+    }
+  },
+  "analyst_mode": "Evidence-only \u00b7 no LLM configured",
+  "fault_controls_enabled": false,
+  "retail_controls_enabled": true,
+  "analyst_evidence_trace": [
+    {
+      "tool": "get_attention_products",
+      "retrieved_at": "2026-10-03T16:05:27.300009Z",
+      "error": null
+    }
+  ]
+}

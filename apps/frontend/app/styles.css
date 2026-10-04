@@ -360,3 +360,6 @@ footer {
     flex-direction: column;
   }
 }
+
+.model-health { margin: 20px 0; padding: 16px; border: 1px solid #314936; border-radius: 10px; }
+.model-health pre { overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 420px; }

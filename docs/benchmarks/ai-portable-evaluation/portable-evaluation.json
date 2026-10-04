@@ -1,0 +1,16 @@
+{
+  "kind": "portable-artifact-evaluation",
+  "simulated": true,
+  "model_version": "hgbr-76457dadb4af",
+  "seed": 42,
+  "baseline": {
+    "count": 5256,
+    "mae": 17.195205479452056,
+    "rmse": 25.928408049624323
+  },
+  "model": {
+    "count": 5256,
+    "mae": 6.128970179190365,
+    "rmse": 9.078040323635381
+  }
+}

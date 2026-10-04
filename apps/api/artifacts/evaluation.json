@@ -1,0 +1,104 @@
+{
+  "dataset_kind": "simulated; no real retail accuracy claim",
+  "seed": 42,
+  "products": 24,
+  "bins": 1152,
+  "simulated_days": 4,
+  "bucket_simulated_minutes": 5,
+  "horizon_minutes": 60,
+  "input_minutes": 60,
+  "target": "completed stock-constrained sales over next 12 bins; latent attempts retained separately",
+  "split": "60/20/20 chronological, 12-bin purges; overlapping horizons are correlated",
+  "split_counts": {
+    "train": 16008,
+    "validation": 5232,
+    "test": 5256
+  },
+  "train_last_target_end": 690,
+  "validation_first_bin": 691,
+  "validation_last_target_end": 920,
+  "test_first_bin": 921,
+  "baseline": {
+    "count": 5256,
+    "mae": 17.195205479452056,
+    "rmse": 25.928408049624323
+  },
+  "model": {
+    "count": 5256,
+    "mae": 6.128970179190321,
+    "rmse": 9.078040323635372
+  },
+  "by_scenario": {
+    "DEMAND_SPIKE": {
+      "baseline": {
+        "count": 1800,
+        "mae": 19.817777777777778,
+        "rmse": 28.015253781546303
+      },
+      "model": {
+        "count": 1800,
+        "mae": 6.885724598052699,
+        "rmse": 10.243625850324122
+      }
+    },
+    "FLASH_SALE": {
+      "baseline": {
+        "count": 1152,
+        "mae": 26.03472222222222,
+        "rmse": 36.343700738000436
+      },
+      "model": {
+        "count": 1152,
+        "mae": 6.635695353614697,
+        "rmse": 10.06075386333581
+      }
+    },
+    "NORMAL": {
+      "baseline": {
+        "count": 2304,
+        "mae": 10.7265625,
+        "rmse": 16.12588821843105
+      },
+      "model": {
+        "count": 2304,
+        "mae": 5.284393202242,
+        "rmse": 7.443941579750042
+      }
+    }
+  },
+  "interval": {
+    "method": "90% validation absolute-residual band, clipped at zero",
+    "radius": 13.987359603241918,
+    "test_coverage": 0.8964992389649924,
+    "warning": "Temporal correlation/regime shift prevents exchangeability coverage guarantees."
+  },
+  "sklearn_version": "1.7.2",
+  "features": [
+    "lag1",
+    "lag2",
+    "lag3",
+    "mean3",
+    "mean12",
+    "std12",
+    "acceleration",
+    "available",
+    "price_ratio",
+    "hour_sin",
+    "hour_cos",
+    "promotion"
+  ],
+  "unseen_seed_products": {
+    "baseline": {
+      "count": 1584,
+      "mae": 14.061868686868687,
+      "rmse": 21.582792201008637
+    },
+    "model": {
+      "count": 1584,
+      "mae": 6.848384474983406,
+      "rmse": 9.531000416631178
+    }
+  },
+  "portable_prediction_max_difference": 0.0,
+  "dataset_sha256": "76457dadb4af0454d3e1ed0fc525c8a0a957beec0c8b1e2f5c5822aa99f9c4f4"
+}

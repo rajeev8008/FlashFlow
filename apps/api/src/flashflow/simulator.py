@@ -98,7 +98,7 @@ def next_event(state: InventoryState, rng: random.Random, event_weights: dict[Ev
 
 async def load_catalog(count: int) -> list[InventoryState]:
     async with Session() as session:
-        rows = (await session.scalars(select(ProductRow).where(ProductRow.category != "Test").order_by(ProductRow.product_id).limit(count))).all()
+        rows = (await session.scalars(select(ProductRow).where(ProductRow.category.not_in(["Test", "Retail Demo"])).order_by(ProductRow.product_id).limit(count))).all()
     if not rows:
         raise RuntimeError("product catalog is empty; run the seed command first")
     return [InventoryState(row.product_id, row.stock, row.reserved_stock, row.version) for row in rows]

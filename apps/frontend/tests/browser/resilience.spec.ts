@@ -41,7 +41,7 @@ test("stale Redis snapshots retain newer cards and recover automatically without
     }),
   );
   await page.routeWebSocket("**/ws", () => {});
-  await page.goto("/");
+  await page.goto("/engineering");
   await expect(page.getByRole("status")).toContainText("LIVE");
   const card = page.locator('[data-product="retained"]');
   await expect(card).toHaveAttribute("data-version", "5");
@@ -82,7 +82,7 @@ test("real development controls demonstrate circuit recovery without blanking th
     headers: { Host: "untrusted.invalid:3000" },
   });
   expect(foreign.status()).toBe(403);
-  await page.goto("/");
+  await page.goto("/engineering");
   await expect(page.getByRole("status")).toContainText("LIVE");
   await page.getByText("Development lab · fault controls").click();
   const fault = page.getByLabel("Inventory read failure");

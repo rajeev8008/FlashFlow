@@ -9,7 +9,7 @@ const errors = [];
 try {
   const page = await browser.newPage();
   page.on('pageerror', error => errors.push(String(error)));
-  await page.goto(process.env.FRONTEND_URL ?? 'http://localhost:3000');
+  await page.goto(process.env.FRONTEND_URL ?? 'http://localhost:3000/engineering');
   await page.locator('[data-product]').last().waitFor();
   const started = Date.now();
   while (Date.now() - started < seconds * 1000) {

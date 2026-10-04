@@ -1,0 +1,82 @@
+{
+  "recorded_date": "2026-10-03",
+  "scope": "Local Docker Desktop; simulated retail; evidence-only Analyst; no remote CI claim",
+  "sources": {
+    "pre-ai-2026-10-03.json": "7ff7432e88d7817b083c638e280db5ac3675df0a6d8885ef280714f567261238",
+    "post-ai-2026-10-03.json": "c32c9cd807bde89c52129670ffe8b8f3777e950f174685eea50b24d6a64b757f",
+    "post-ai-final-2026-10-03.json": "9a33e5d2ee213e63221a4919d7d8e12e6169e1c4d4aafdef23ec7c21284a61c5",
+    "browser-1791041382552.json": "240e393048b4895f5c4317dc7efd65a07ebf7cbbc00bdf30665efe0164aa3c0b",
+    "ai-load-100-2026-10-03.json": "c1ae505f0c6c713a446b3834d3c91403ef0376711b46dc799963d0f8d8c84e83",
+    "retail-final-integration-2026-10-03.json": "276e65cca1cc4cfe554c13da63b35a8718de5a4c092d46ee5732d17ebba638de",
+    "forecast-isolation-2026-10-03.json": "2f2d481dd8d4016af955e6ea9e043428f28ec45ff744943d175653365b2c791a",
+    "model-fallback-2026-10-03.json": "678c1a02beeab4374b3acef83d008f689d2502d8c1549f840ac3624bc674b066",
+    "retail-final-health-2026-10-03.json": "60b000302de1102aa19bca65c473e98b9c9dd0c2a333b15985c1223b19883b1f"
+  },
+  "pipeline_comparison": {
+    "before": {
+      "configured_rate": 500,
+      "configured_seconds": 60,
+      "produced": 29996,
+      "actual_producer_rate": 499.81183701442677,
+      "drained": true,
+      "drain_seconds": 2.048468558999957,
+      "event_to_client_ms": {
+        "p50": 529.168,
+        "p95": 1383.75,
+        "p99": 2020.79
+      },
+      "maximum_sampled_lag": 857,
+      "errors": [],
+      "inventory_throughput_including_drain": 483.31492340718086
+    },
+    "after_final": {
+      "configured_rate": 500,
+      "configured_seconds": 60,
+      "produced": 29997,
+      "actual_producer_rate": 499.8239798797767,
+      "drained": true,
+      "drain_seconds": 2.0317685619993426,
+      "event_to_client_ms": {
+        "p50": 393.809,
+        "p95": 804.811,
+        "p99": 936.721
+      },
+      "maximum_sampled_lag": 346,
+      "errors": [],
+      "inventory_throughput_including_drain": 483.4568977309731
+    }
+  },
+  "validation": {
+    "backend_unit": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend_unit": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser_final": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 39.8
+    },
+    "checks": [
+      "TypeScript",
+      "production frontend build",
+      "fatal Ruff",
+      "phase2 inventory",
+      "pricing",
+      "pipeline",
+      "phase2 restart",
+      "resilience",
+      "retail scenarios and approval",
+      "missing-model fallback",
+      "forecast-worker isolation"
+    ],
+    "provider": "No live provider; mocked adapter validation and evidence-only live integration",
+    "dataset_replay_sha256": "76457dadb4af0454d3e1ed0fc525c8a0a957beec0c8b1e2f5c5822aa99f9c4f4"
+  }
+}

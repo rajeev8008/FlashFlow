@@ -32,7 +32,7 @@ test("price-only Kafka snapshots update direction, reason and revision without s
   await page.routeWebSocket("**/ws", (ws) => {
     socket = ws;
   });
-  await page.goto("/");
+  await page.goto("/engineering");
   const card = page.locator('[data-product="a"]');
   await expect(card).toHaveAttribute("data-version", "1");
   socket!.send(
@@ -80,7 +80,7 @@ test("live changes, isolation, benchmark modes, reconnect and degraded/offline s
   await page.routeWebSocket("**/ws", (ws) => {
     sockets.push(ws);
   });
-  await page.goto("/");
+  await page.goto("/engineering");
   await expect(page.getByRole("status")).toContainText("LIVE");
   const a = page.locator('[data-product="a"]'),
     b = page.locator('[data-product="b"]');
@@ -140,7 +140,7 @@ test("running Kafka stack delivers changing versions and a responsive dashboard"
     !process.env.LIVE_STACK,
     "Set LIVE_STACK=1 with the Compose stack and simulator running.",
   );
-  await page.goto("/");
+  await page.goto("/engineering");
   await expect(page.getByRole("status")).toContainText("LIVE");
   await expect(page.locator("article")).toHaveCount(500);
   const versions = await page
@@ -214,7 +214,7 @@ test("2000 socket updates coalesce while the dashboard stays interactive", async
   await page.routeWebSocket("**/ws", (ws) => {
     socket = ws;
   });
-  await page.goto("/");
+  await page.goto("/engineering");
   await expect(page.locator("article")).toHaveCount(500);
   const before = await page
     .locator('[data-product="0"]')

@@ -1,6 +1,8 @@
 # Architecture and operating boundaries
 
-This is a single FastAPI process with inventory/pricing handlers and a WebSocket connection manager, not three separately deployed services. Next.js serves the dashboard and fixed server-side proxies. Docker Compose runs Kafka, PostgreSQL, Redis, the API, frontend, and one simulator and configurable co-located Kafka group members.
+This is a single FastAPI process with inventory/pricing handlers and a WebSocket connection manager, not three separately deployed services. Next.js serves the dashboard and fixed server-side proxies. Docker Compose runs Kafka, PostgreSQL, Redis, the API, frontend, one simulator, configurable co-located Kafka group members, and one separate advisory forecast/scenario worker. The worker has its own inventory consumer group and PostgreSQL feature receipts. It does not block the inventory consumer on model or Analyst inference.
+
+The worker observes only inventory events acknowledged by the core, builds bounded five-second histories, persists forecasts and recommendations, and publishes approved quantity restocks through the existing inventory topic. Human decisions and publication/execution timestamps are recorded separately. Analyst requests use five bounded read-only tools; evidence-only mode is the default. See [the retail report](ai-retail-report.md) for detailed clock, risk, approval and failure boundaries.
 
 ```mermaid
 flowchart LR
@@ -88,4 +90,6 @@ API CPU is process CPU time / wall time (100% = one core). Peak RSS is Linux `ru
 5. Add user authentication, authorization, origin checks for public sockets, request/connection limits, bounded HTTP timeouts, readiness checks, and network isolation. Fault controls must stay disabled. The provided Compose credentials and loopback ports are local defaults, not deployment credentials.
 6. Export process/group/gateway metrics to Prometheus/Grafana and distributed traces using event IDs; add schema registry/compatibility enforcement when independently deployed producers require it. Run controlled multi-host tests and failure drills before claiming production availability.
 
-The current deployment is intentionally local, with one API worker and one simulator and configurable co-located Kafka group members. Audit/receipt tables grow indefinitely, pricing is rule-based rather than trained ML, and the 500-card grid is not virtualized. There is no checkout/payment system or multi-node failover guarantee.
+The current deployment is intentionally local, with one API worker one simulator, configurable co-located Kafka group members, and one separate advisory forecast/scenario worker. The worker has its own inventory consumer group and PostgreSQL feature receipts. It does not block the inventory consumer on model or Analyst inference.
+
+The worker observes only inventory events acknowledged by the core, builds bounded five-second histories, persists forecasts and recommendations, and publishes approved quantity restocks through the existing inventory topic. Human decisions and publication/execution timestamps are recorded separately. Analyst requests use five bounded read-only tools; evidence-only mode is the default. See [the retail report](ai-retail-report.md) for detailed clock, risk, approval and failure boundaries. Audit/receipt tables grow indefinitely, pricing is rule-based rather than trained ML, and the 500-card grid is not virtualized. There is no checkout/payment system or multi-node failover guarantee.

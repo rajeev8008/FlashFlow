@@ -13,7 +13,7 @@ from .pricing import record_decision
 
 class InventoryPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    version: int = Field(ge=2, strict=True)
+    version: int | None = Field(None, ge=2, strict=True)
     quantity: int | None = Field(None, gt=0, strict=True)
     stock: int | None = Field(None, ge=0, strict=True)
     reserved_stock: int | None = Field(None, ge=0, strict=True)
@@ -22,6 +22,10 @@ class InventoryPayload(BaseModel):
 
 def transition(product: Product, event: EventEnvelope) -> Product:
     payload = InventoryPayload.model_validate(event.payload)
+    if payload.version is None:
+        if event.source not in ('retail-scenario', 'retail-operator'):
+            raise ValueError('Version required for snapshot inventory producers')
+        payload.version = product.version + 1
     if payload.version <= product.version:
         return product
     if payload.version != product.version + 1:
